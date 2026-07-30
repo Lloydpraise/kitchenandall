@@ -1,17 +1,82 @@
 ---
+import Layout from '../layouts/layout.astro';
+import MarketingPopup from '../components/MarketingPopup';
+import HeroSlider from '../components/heroSlider';
+import AnimatedBanner from '../components/AnimatedBanner';
+import ProductCard from '../components/productCard';
+import { supabase } from '../lib/supabase';
 
+const navCategories = [
+  { name: "Cooking", img: "https://i.pinimg.com/1200x/e7/ce/cf/e7cecf08ecf1e0a95e69bc3a537409af.jpg" },
+  { name: "Refrigeration", img: "https://i.pinimg.com/1200x/a1/f6/d4/a1f6d499d2fd273265519054edf35b41.jpg" },
+  { name: "Food Prep", img: "https://i.pinimg.com/736x/ab/41/b7/ab41b70365052130155ff62c5f2f8d65.jpg" },
+  { name: "Stainless Steel", img: "https://i.pinimg.com/1200x/e7/ce/cf/e7cecf08ecf1e0a95e69bc3a537409af.jpg" }
+];
+
+const { data: featuredProducts, error } = await supabase
+  .from('products')
+  .select('*')
+  .limit(4);
+
+if (error) console.error('Featured products error:', error);
 ---
+<Layout>
+  <div class="relative min-h-screen bg-slate-50">
+    <MarketingPopup client:load />
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+    <section class="h-[650px] w-full bg-[#0F172A] overflow-hidden">
+      <HeroSlider client:load />
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 -mt-12 relative z-20 grid grid-cols-2 lg:grid-cols-4 gap-6">
+      {navCategories.map((cat) => (
+        <a href={`/category/${cat.name.toLowerCase().replace(' ', '-')}`} class="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border-4 border-white">
+          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={`background-image: url('${cat.img}')`}></div>
+          <div class="absolute inset-0 bg-slate-900/40 group-hover:bg-orange-600/70 transition-colors duration-500"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <h3 class="text-white font-black uppercase tracking-tighter text-xl">{cat.name}</h3>
+          </div>
+        </a>
+      ))}
+    </section>
+
+    <main class="max-w-7xl mx-auto px-4 py-24">
+      <div class="flex items-end justify-between mb-12 border-b border-slate-200 pb-4">
+        <div>
+          <h3 class="text-3xl font-black text-slate-900 uppercase tracking-tight">Essential Kitchen Gear</h3>
+          <div class="h-1.5 w-20 bg-orange-600 mt-2"></div>
+        </div>
+        <a href="/catalog" class="text-orange-600 font-black uppercase text-sm tracking-widest hover:underline">View All</a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        {(featuredProducts || []).map((product) => (
+          <ProductCard product={product} client:visible />
+        ))}
+      </div>
+    </main>
+
+    <AnimatedBanner client:visible />
+
+    <section class="bg-white py-24 border-t border-slate-200">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        <h2 class="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-16">Connect With Us</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 text-left">
+          <div class="bg-slate-50 p-12 rounded-3xl border border-slate-100 shadow-sm">
+            <h4 class="text-orange-600 font-black uppercase tracking-widest text-sm mb-6">Support & Sales</h4>
+            <p class="font-bold text-slate-800 text-xl">WhatsApp: <a href="https://wa.me/254741045143" target="_blank" class="hover:text-orange-600">+254 741 045 143</a></p>
+            <p class="font-bold text-slate-800 text-xl mt-4">Email: <a href="mailto:Mugambievelyn812@gmail.com" class="hover:text-orange-600 transition-colors">Mugambievelyn812@gmail.com</a></p>
+            <p class="font-bold text-slate-800 text-xl mt-4">Location: Ruiru, Kiambu County</p>
+          </div>
+          <div class="bg-[#0F172A] p-12 rounded-3xl shadow-2xl text-white">
+            <h4 class="text-orange-500 font-black uppercase tracking-widest text-sm mb-6">Follow the Craft</h4>
+            <div class="space-y-4 text-xl font-bold">
+              <a href="https://www.facebook.com/Kitchenandall" target="_blank" class="block hover:text-orange-500 transition-all">Facebook: Kitchen and all</a>
+              <a href="https://www.tiktok.com/@kitchenandall" target="_blank" class="block hover:text-orange-500 transition-all">TikTok: Kitchen and all</a>
+              <a href="https://www.instagram.com/kitch_enandall" target="_blank" class="block hover:text-orange-500 transition-all">Instagram: Kitch_enandall</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

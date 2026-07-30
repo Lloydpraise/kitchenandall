@@ -1,0 +1,110 @@
+---
+import SearchBar from '../components/SearchBar';
+
+const navCategories = [
+  { name: "Cooking", subcategories: ["Bakery Appliances", "Burners Jikos Stoves", "Cooking Appliances", "Small Appliances"] },
+  { name: "Refrigeration", subcategories: ["Large Appliances", "Hotel Appliances", "Office Kitchen"] },
+  { name: "Food Prep", subcategories: ["Butchery Equipment", "Food Processors", "Measuring Tools Scales", "Home Kitchen"] },
+  { name: "Stainless Steel", subcategories: ["Juakali Fabrications", "Hotel Appliances"] }
+];
+
+const allEquipmentItems = [
+  "Bakery Appliances", "Burners Jikos Stoves", "Cooking Appliances",
+  "Large Appliances", "Hotel Appliances", "Office Kitchen",
+  "Butchery Equipment", "Food Processors", "Measuring Tools Scales",
+  "Home Kitchen", "Juakali Fabrications"
+];
+
+function slugify(str: string) {
+  return str.toLowerCase().replace(/[\s/]+/g, '-');
+}
+---
+<html lang="en" class="h-full antialiased">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KitchenAll Pro</title>
+</head>
+<body class="min-h-full flex flex-col font-sans bg-white">
+
+  <div class="bg-slate-900 text-slate-200 py-2 border-b border-slate-800 shrink-0">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center text-[12px] font-normal tracking-wide">
+      <div class="flex items-center gap-6">
+        <a href="mailto:kitchenandallpro@gmail.com" class="hover:text-orange-400 transition-colors lowercase">kitchenandallpro@gmail.com</a>
+        <a href="tel:+254741045143" class="hidden sm:inline hover:text-orange-400 transition-colors">+254 741 045 143</a>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="hidden lg:flex items-center gap-5 border-r border-slate-700 pr-6">
+          <a href="https://facebook.com" target="_blank" class="hover:text-orange-500 transition-colors">Facebook</a>
+          <a href="https://instagram.com/kitch_enandall" target="_blank" class="hover:text-orange-500 transition-colors">Instagram</a>
+          <a href="https://wa.me/254741045143" target="_blank" class="hover:text-orange-500 transition-colors">WhatsApp</a>
+        </div>
+        <div class="group relative py-1">
+          <button class="flex items-center gap-1.5 hover:text-orange-500 transition-colors uppercase font-bold text-[10px] tracking-widest">My Account</button>
+          <div class="absolute top-full right-0 mt-1 w-44 bg-white border border-slate-100 shadow-2xl rounded-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[70]">
+            <a href="/login" class="block px-4 py-2 text-[11px] text-slate-800 hover:bg-slate-50 hover:text-orange-600 font-black uppercase tracking-widest transition-colors">Sign In</a>
+            <a href="/register" class="block px-4 py-2 text-[11px] text-slate-800 hover:bg-slate-50 hover:text-orange-600 font-black uppercase tracking-widest transition-colors">Create Account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bg-white border-b sticky top-0 z-50 shadow-sm h-24 flex items-center shrink-0">
+    <div class="max-w-7xl mx-auto px-4 w-full flex items-center justify-between gap-4">
+      <a href="/" class="shrink-0 mr-4">
+        <h1 class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase">
+          KITCHENALL <span class="text-orange-600">PRO</span>
+        </h1>
+      </a>
+
+      <div class="hidden lg:flex items-center flex-1 justify-center gap-1">
+        <a href="/" class="px-3 py-2 font-black text-[11px] text-slate-800 hover:text-orange-600 uppercase">Home</a>
+
+        <div class="group relative h-24 flex items-center mr-2">
+          <button class="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded font-black text-[10px] hover:bg-orange-600 transition-all uppercase tracking-widest">
+            All Equipment
+          </button>
+          <div class="absolute top-24 left-0 w-64 bg-white border border-slate-100 shadow-2xl rounded-b-2xl py-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+            {allEquipmentItems.map((item) => (
+              <a href={`/category/${slugify(item)}`} class="block px-6 py-2.5 text-[11px] font-black text-slate-800 hover:text-orange-600 uppercase transition-colors">{item}</a>
+            ))}
+          </div>
+        </div>
+
+        {navCategories.map((cat) => (
+          <div class="group relative h-24 flex items-center">
+            <button class="px-3 py-2 font-bold text-[11px] text-slate-600 group-hover:text-orange-600 uppercase">{cat.name}</button>
+            <div class="absolute top-24 left-1/2 -translate-x-1/2 w-64 bg-white border shadow-2xl rounded-b-2xl py-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+              {cat.subcategories.map((sub) => (
+                <a href={`/category/${slugify(sub)}`} class="block px-6 py-2.5 text-[12px] text-slate-600 hover:text-orange-600 border-l-4 border-transparent hover:border-orange-600 font-bold uppercase transition-all">{sub}</a>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div class="w-full max-w-[220px] ml-4">
+          <SearchBar client:load />
+        </div>
+      </div>
+
+      <div class="flex items-center ml-2">
+        <button class="relative p-2 text-slate-800 hover:text-orange-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="absolute -top-1 -right-1 bg-orange-600 text-white text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-grow">
+    <slot />
+  </main>
+
+  <footer class="bg-slate-900 py-12 text-center shrink-0 border-t border-slate-800">
+    <p class="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em]">© 2026 KitchenAndAll Ltd. Ruiru Workshop, Kenya.</p>
+  </footer>
+</body>
+</html>
