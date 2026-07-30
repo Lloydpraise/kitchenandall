@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/layout.astro';
-import MarketingPopup from '../components/MarketingPopup';
 import HeroSlider from '../components/heroSlider';
 import AnimatedBanner from '../components/AnimatedBanner';
 import ProductCard from '../components/productCard';
@@ -22,8 +21,6 @@ if (error) console.error('Featured products error:', error);
 ---
 <Layout>
   <div class="relative min-h-screen bg-slate-50">
-    <MarketingPopup client:load />
-
     <section class="h-[650px] w-full bg-[#0F172A] overflow-hidden">
       <HeroSlider client:load />
     </section>
@@ -67,12 +64,22 @@ if (error) console.error('Featured products error:', error);
             <p class="font-bold text-slate-800 text-xl mt-4">Email: <a href="mailto:Mugambievelyn812@gmail.com" class="hover:text-orange-600 transition-colors">Mugambievelyn812@gmail.com</a></p>
             <p class="font-bold text-slate-800 text-xl mt-4">Location: Ruiru, Kiambu County</p>
           </div>
-          <div class="bg-[#0F172A] p-12 rounded-3xl shadow-2xl text-white">
-            <h4 class="text-orange-500 font-black uppercase tracking-widest text-sm mb-6">Follow the Craft</h4>
-            <div class="space-y-4 text-xl font-bold">
-              <a href="https://www.facebook.com/Kitchenandall" target="_blank" class="block hover:text-orange-500 transition-all">Facebook: Kitchen and all</a>
-              <a href="https://www.tiktok.com/@kitchenandall" target="_blank" class="block hover:text-orange-500 transition-all">TikTok: Kitchen and all</a>
-              <a href="https://www.instagram.com/kitch_enandall" target="_blank" class="block hover:text-orange-500 transition-all">Instagram: Kitch_enandall</a>
+          <div class="bg-slate-50 p-12 rounded-3xl border border-slate-100 shadow-sm">
+            <h4 class="text-orange-600 font-black uppercase tracking-widest text-sm mb-6">Need Help?</h4>
+            <p class="text-slate-600 text-lg leading-relaxed">Send your project details and we’ll get back to you quickly with a tailored plan and pricing.</p>
+            <div class="mt-8 space-y-4 text-slate-800">
+              <div>
+                <p class="font-black uppercase tracking-widest text-[10px] text-slate-500">Phone</p>
+                <a href="tel:+254741045143" class="mt-2 block hover:text-orange-600">+254 741 045 143</a>
+              </div>
+              <div>
+                <p class="font-black uppercase tracking-widest text-[10px] text-slate-500">Email</p>
+                <a href="mailto:Mugambievelyn812@gmail.com" class="mt-2 block hover:text-orange-600">Mugambievelyn812@gmail.com</a>
+              </div>
+              <div>
+                <p class="font-black uppercase tracking-widest text-[10px] text-slate-500">Location</p>
+                <p class="mt-2">Ruiru, Kiambu County</p>
+              </div>
             </div>
           </div>
         </div>
