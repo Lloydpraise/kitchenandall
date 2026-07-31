@@ -5,15 +5,22 @@ import Layout from '../../layouts/layout.astro';
 import { supabase } from '../../lib/supabase';
 import ProductDetail from '../../components/ProductDetail';
 
-const productId = Number(Astro.params.id);
+const { slug } = Astro.params;
+
 const { data: product, error } = await supabase
   .from('products')
   .select('*')
-  .eq('id', productId)
+  .eq('slug', slug)
   .single();
+
+const siteUrl = 'https://YOUR-DOMAIN-HERE.com'; // swap once you have the real domain
 ---
 
-<Layout>
+<Layout
+  title={product ? (product.meta_title || product.name) : "Product not found"}
+  description={product ? (product.meta_description || product.description) : undefined}
+  canonicalUrl={product ? (product.canonical_url || `${siteUrl}/product/${product.slug}`) : undefined}
+>
   <main class="min-h-[calc(100vh-7rem)] bg-slate-50">
     {product ? (
       <ProductDetail product={product} client:load />
@@ -21,7 +28,7 @@ const { data: product, error } = await supabase
       <div class="mx-auto flex min-h-[60vh] max-w-4xl items-center justify-center px-4 py-24 text-center">
         <div class="rounded-[2rem] border border-slate-200 bg-white p-16 shadow-2xl">
           <p class="text-sm uppercase tracking-[0.35em] text-orange-600 font-black">Product not found</p>
-          <h1 class="mt-6 text-3xl font-black text-slate-900">Sorry, we couldn’t find that item.</h1>
+          <h1 class="mt-6 text-3xl font-black text-slate-900">Sorry, we couldn't find that item.</h1>
           <p class="mt-4 text-slate-600">The product may have been removed or the link is invalid.</p>
           <a href="/" class="mt-8 inline-flex rounded-full bg-orange-600 px-8 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-orange-700">Back to home</a>
         </div>

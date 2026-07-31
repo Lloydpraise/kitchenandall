@@ -1,5 +1,9 @@
+import { useEffect, useState } from 'react';
+import { addToCart } from '../stores/cart';
+
 interface Product {
   id: number;
+  slug: string;
   name: string;
   description: string;
   price: string;
@@ -8,13 +12,31 @@ interface Product {
 }
 
 export default function ProductCard({ product }: { product: Product }) {
+  const [toastVisible, setToastVisible] = useState(false);
   const isOutOfStock = product.stock_quantity <= 0;
+
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      image: product.image_url,
+      price: Number(product.price),
+    });
+    setToastVisible(true);
+  };
+
+  useEffect(() => {
+    if (!toastVisible) return;
+    const timer = window.setTimeout(() => setToastVisible(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [toastVisible]);
 
   return (
     <div className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-orange-500 hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
       
       {/* Clickable Image Section */}
-      <a href={`/product/${product.id}`} className="relative aspect-[4/3] overflow-hidden bg-slate-100 block">
+      <a href={`/product/${product.slug}`} className="relative aspect-[4/3] overflow-hidden bg-slate-100 block">
         <img 
           src={product.image_url} 
           alt={product.name}
@@ -32,7 +54,7 @@ export default function ProductCard({ product }: { product: Product }) {
       <div className="p-6 flex flex-col flex-1">
         <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest italic">Industrial Grade</span>
         
-        <a href={`/product/${product.id}`}>
+        <a href={`/product/${product.slug}`}>
           <h3 className="font-extrabold text-slate-900 text-xl mt-1 group-hover:text-orange-600 transition-colors line-clamp-1">
             {product.name}
           </h3>
@@ -52,11 +74,13 @@ export default function ProductCard({ product }: { product: Product }) {
 
           {/* ADD TO CART - Disabled if out of stock */}
           <button 
+            type="button"
             disabled={isOutOfStock}
+            onClick={handleAddToCart}
             className={`flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${
               isOutOfStock 
               ? 'bg-slate-100 text-slate-300 cursor-not-allowed opacity-50' 
-              : 'bg-slate-900 text-white hover:bg-orange-600 shadow-md active:scale-95'
+              : 'bg-slate-900 text-white hover:bg-orange-600 shadow-md active:scale-95 cursor-pointer'
             }`}
           >
             <span>Add</span>

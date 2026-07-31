@@ -1,0 +1,70 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/layout.astro';
+import { supabase } from '../../lib/supabase';
+import ProductCard from '../../components/productCard';
+
+const { slug } = Astro.params;
+
+const majorCategories = ["Cooking", "Refrigeration", "Food Prep", "Stainless Steel"];
+const subCategories = [
+  "Bakery Appliances", "Burners/Jikos/Stoves", "Cooking Appliances", "Small Appliances",
+  "Large Appliances", "Hotel Appliances", "Office Kitchen",
+  "Butchery Equipment", "Food Processors", "Measuring Tools",
+  "Home Kitchen", "Juakali Fabrications"
+];
+
+function slugify(str: string) {
+  return str.toLowerCase().replace(/[\s/]+/g, '-');
+}
+
+const matchedMajor = majorCategories.find((c) => slugify(c) === slug);
+const matchedSub = subCategories.find((c) => slugify(c) === slug);
+const categoryName = matchedMajor || matchedSub;
+
+let products: any[] = [];
+if (categoryName) {
+  const { data, error } = matchedMajor
+    ? await supabase.from('products').select('*').eq('major_category', matchedMajor)
+    : await supabase.from('products').select('*').eq('sub_category', matchedSub);
+
+  if (error) console.error('Category query error:', error);
+  products = data || [];
+}
+---
+
+<Layout
+  title={categoryName ? `${categoryName} — Kitchen And All` : "Category not found"}
+  description={categoryName ? `Shop ${categoryName.toLowerCase()} equipment from Kitchen And All, Ruiru, Kenya.` : undefined}
+>
+  <main class="max-w-7xl mx-auto px-4 py-16">
+    {categoryName ? (
+      <>
+        <div class="mb-12 border-b border-slate-200 pb-4">
+          <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tight">{categoryName}</h1>
+          <div class="h-1.5 w-20 bg-orange-600 mt-2"></div>
+          <p class="mt-4 text-slate-600">{products.length} product{products.length === 1 ? '' : 's'} found</p>
+        </div>
+
+        {products.length > 0 ? (
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            {products.map((product) => (
+              <ProductCard product={product} client:visible />
+            ))}
+          </div>
+        ) : (
+          <p class="text-slate-500">No products in this category yet.</p>
+        )}
+      </>
+    ) : (
+      <div class="mx-auto flex min-h-[40vh] max-w-2xl items-center justify-center text-center">
+        <div>
+          <p class="text-sm uppercase tracking-[0.35em] text-orange-600 font-black">Category not found</p>
+          <h1 class="mt-6 text-2xl font-black text-slate-900">That category doesn't exist.</h1>
+          <a href="/" class="mt-8 inline-flex rounded-full bg-orange-600 px-8 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-orange-700">Back to home</a>
+        </div>
+      </div>
+    )}
+  </main>
+</Layout>

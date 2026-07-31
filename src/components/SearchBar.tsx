@@ -26,7 +26,7 @@ export default function SearchBar() {
       }
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, price, image')
+        .select('id, slug, name, price, image_url')
         .ilike('name', `%${searchQuery}%`)
         .limit(5);
 
@@ -56,12 +56,12 @@ export default function SearchBar() {
           {results.map((product) => (
             <a
               key={product.id}
-              href={`/product/${product.id}`}
+              href={`/product/${product.slug}`}
               onClick={() => setIsSearching(false)}
               className="flex items-center gap-4 p-3 hover:bg-slate-50 border-b border-slate-50 last:border-none transition-colors"
             >
               <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden shrink-0">
-                <img src={product.image || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover" />
+                <img src={product.image_url || "/placeholder.png"} alt={product.name} className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col">
                 <span className="text-[12px] font-medium text-slate-700 line-clamp-1">{product.name}</span>

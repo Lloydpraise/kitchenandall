@@ -1,62 +1,21 @@
 ---
 import Layout from '../layouts/layout.astro';
+import GetQuoteForm from '../components/GetQuoteForm';
 ---
 
-<Layout>
-  <section class="min-h-[60vh] bg-slate-50 px-4 py-20">
-    <div class="mx-auto max-w-3xl rounded-[2rem] bg-white border border-slate-200 p-14 shadow-2xl">
-      <div class="mb-10 text-center">
-        <p class="text-sm uppercase tracking-[0.35em] text-orange-600 font-black">Request a Quote</p>
-        <h1 class="mt-4 text-4xl font-black text-slate-900">Get a personalized kitchen quote</h1>
-        <p class="mt-4 text-slate-500">Tell us what you need and we'll prepare a tailored estimate.</p>
+<Layout
+  title="Get a Free Quote — Kitchen And All"
+  description="Request a free consultation for your commercial kitchen equipment, layout, or fabrication project."
+>
+  <section class="min-h-[60vh] bg-slate-50 px-4 py-16">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tight">Get a Free Consultation</h1>
+        <p class="mt-4 text-slate-600">Tell us about your project and we'll get back to you with a tailored quote.</p>
       </div>
-
-      <form class="space-y-6">
-        <div>
-          <label class="block text-sm font-bold uppercase tracking-widest text-slate-700">Name</label>
-          <input type="text" class="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200" placeholder="Your full name" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-bold uppercase tracking-widest text-slate-700">Email</label>
-          <input type="email" class="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200" placeholder="you@example.com" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-bold uppercase tracking-widest text-slate-700">Phone</label>
-          <input type="tel" class="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200" placeholder="+254 7XX XXX XXX" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-bold uppercase tracking-widest text-slate-700">Project details</label>
-          <textarea rows="5" class="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200" placeholder="Tell us the project size, kitchen type, and any special requirements"></textarea>
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-2">
-          <div>
-            <label class="block text-sm font-bold uppercase tracking-widest text-slate-700">Budget range</label>
-            <select class="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200">
-              <option>Choose a budget</option>
-              <option>Under KSH 100,000</option>
-              <option>KSH 100,000 - 250,000</option>
-              <option>KSH 250,000 - 500,000</option>
-              <option>Over KSH 500,000</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-bold uppercase tracking-widest text-slate-700">Preferred contact</label>
-            <select class="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-900 outline-none focus:border-orange-600 focus:ring-2 focus:ring-orange-200">
-              <option>Email</option>
-              <option>WhatsApp</option>
-              <option>Phone Call</option>
-            </select>
-          </div>
-        </div>
-
-        <button type="button" class="inline-flex w-full items-center justify-center rounded-3xl bg-orange-600 px-6 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg hover:bg-orange-700 transition-all">
-          Submit Request
-        </button>
-      </form>
+      <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <GetQuoteForm client:load />
+      </div>
     </div>
   </section>
 </Layout>

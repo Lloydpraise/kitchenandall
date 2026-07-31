@@ -1,13 +1,46 @@
 ---
 import Layout from '../layouts/layout.astro';
+import { supabase } from '../lib/supabase';
+
+export const prerender = false;
+
+const { data: posts, error } = await supabase
+  .from('posts')
+  .select('title, slug, excerpt, cover_image, published_at')
+  .eq('published', true)
+  .order('published_at', { ascending: false });
+
+if (error) console.error('Blog list error:', error);
 ---
 
-<Layout>
-  <section class="min-h-[60vh] bg-slate-50 px-4 py-28">
-    <div class="mx-auto max-w-4xl rounded-[2rem] bg-white border border-slate-200 p-14 shadow-2xl text-center">
-      <p class="text-sm uppercase tracking-[0.35em] text-orange-600 font-black">Blogs</p>
-      <h1 class="mt-6 text-4xl font-black text-slate-900">Insights and kitchen design guides</h1>
-      <p class="mt-6 text-slate-600 leading-relaxed">This page is a placeholder for your blog content. Add articles about kitchen equipment, design inspiration, and commercial kitchen planning here later.</p>
+<Layout
+  title="Blog — Kitchen And All"
+  description="Guides and insights on commercial kitchen equipment, refrigeration, and fabrication for Kenyan hospitality businesses."
+>
+  <main class="max-w-7xl mx-auto px-4 py-16">
+    <div class="mb-12 border-b border-slate-200 pb-4">
+      <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tight">Blog</h1>
+      <div class="h-1.5 w-20 bg-orange-600 mt-2"></div>
     </div>
-  </section>
+
+    {posts && posts.length > 0 ? (
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        {posts.map((post) => (
+          <a href={`/blogs/${post.slug}`} class="group block rounded-3xl border border-slate-200 overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all">
+            {post.cover_image && (
+              <div class="h-48 overflow-hidden">
+                <img src={post.cover_image} alt={post.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              </div>
+            )}
+            <div class="p-6">
+              <h2 class="font-black text-slate-900 text-lg leading-tight group-hover:text-orange-600 transition-colors">{post.title}</h2>
+              {post.excerpt && <p class="mt-3 text-slate-600 text-sm leading-relaxed">{post.excerpt}</p>}
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="text-slate-500">No posts yet — check back soon.</p>
+    )}
+  </main>
 </Layout>

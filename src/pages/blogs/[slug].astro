@@ -1,0 +1,90 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/layout.astro';
+import { supabase } from '../../lib/supabase';
+import { marked } from 'marked';
+
+const { slug } = Astro.params;
+
+const { data: post, error } = await supabase
+  .from('posts')
+  .select('*')
+  .eq('slug', slug)
+  .eq('published', true)
+  .single();
+
+const { data: relatedPosts } = post
+  ? await supabase
+      .from('posts')
+      .select('title, slug, cover_image')
+      .eq('published', true)
+      .neq('slug', slug)
+      .order('published_at', { ascending: false })
+      .limit(3)
+  : { data: [] };
+
+const contentHtml = post ? marked.parse(post.content) : '';
+
+const siteUrl = 'https://YOUR-DOMAIN-HERE.com';
+
+const jsonLd = post ? {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": post.title,
+  "description": post.meta_description || post.excerpt,
+  "image": post.cover_image,
+  "datePublished": post.published_at,
+  "dateModified": post.updated_at,
+} : null;
+---
+
+<Layout
+  title={post ? (post.meta_title || post.title) : "Post not found"}
+  description={post ? (post.meta_description || post.excerpt) : undefined}
+  canonicalUrl={post ? (post.canonical_url || `${siteUrl}/blogs/${post.slug}`) : undefined}
+>
+  {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+  <main class="max-w-3xl mx-auto px-4 py-16">
+    {post ? (
+      <>
+        <article>
+          {post.cover_image && (
+            <img src={post.cover_image} alt={post.title} class="w-full h-80 object-cover rounded-3xl mb-10" />
+          )}
+          <p class="text-sm uppercase tracking-widest text-orange-600 font-black">
+            {new Date(post.published_at).toLocaleDateString('en-KE', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+          <h1 class="mt-4 text-4xl font-black text-slate-900 leading-tight">{post.title}</h1>
+
+          <div class="prose prose-slate prose-headings:font-black prose-a:text-blue-600 prose-a:underline max-w-none mt-8" set:html={contentHtml} />
+        </article>
+
+        {relatedPosts && relatedPosts.length > 0 && (
+          <div class="mt-20 border-t border-slate-200 pt-12">
+            <h2 class="text-xl font-black text-slate-900 uppercase tracking-widest mb-8">Related Articles</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+              {relatedPosts.map((related) => (
+                <a href={`/blogs/${related.slug}`} class="group block">
+                  {related.cover_image && (
+                    <div class="h-32 rounded-2xl overflow-hidden mb-3">
+                      <img src={related.cover_image} alt={related.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                  )}
+                  <p class="font-bold text-slate-900 text-sm group-hover:text-orange-600 transition-colors">{related.title}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </>
+    ) : (
+      <div class="text-center py-24">
+        <p class="text-sm uppercase tracking-[0.35em] text-orange-600 font-black">Post not found</p>
+        <h1 class="mt-6 text-2xl font-black text-slate-900">That article doesn't exist or isn't published yet.</h1>
+        <a href="/blogs" class="mt-8 inline-flex rounded-full bg-orange-600 px-8 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-orange-700">Back to Blog</a>
+      </div>
+    )}
+  </main>
+</Layout>

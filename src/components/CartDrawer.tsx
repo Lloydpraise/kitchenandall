@@ -1,38 +1,12 @@
-import { useMemo, useState } from 'react';
-
-interface CartItem {
-  id: number;
-  title: string;
-  image: string;
-  price: number;
-  quantity: number;
-}
-
-const DUMMY_CART_ITEMS: CartItem[] = [
-  {
-    id: 1,
-    title: 'Stainless Steel Work Table',
-    image: 'https://images.unsplash.com/photo-1517430816045-df4b7de1bf90?auto=format&fit=crop&w=800&q=80',
-    price: 12999,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    title: 'Commercial Blender',
-    image: 'https://images.unsplash.com/photo-1506807803488-8eafc153f5ae?auto=format&fit=crop&w=800&q=80',
-    price: 8499,
-    quantity: 2,
-  },
-];
+import { useStore } from '@nanostores/react';
+import { useState } from 'react';
+import { cartItems, removeFromCart, updateQuantity } from '../stores/cart';
 
 export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
-  const [items] = useState<CartItem[]>(DUMMY_CART_ITEMS);
+  const items = useStore(cartItems);
 
-  const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items]
-  );
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <>
@@ -50,13 +24,8 @@ export default function CartDrawer() {
         </span>
       </button>
 
-      <div
-        className={`fixed inset-0 z-50 transition-all duration-300 ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
-      >
-        <div
-          className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-        />
+      <div className={`fixed inset-0 z-50 transition-all duration-300 ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}>
+        <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
 
         <aside className={`absolute right-0 top-0 h-full w-full max-w-sm bg-white shadow-2xl border-l border-slate-200 transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="flex items-center justify-between border-b border-slate-200 p-5">
@@ -64,12 +33,7 @@ export default function CartDrawer() {
               <p className="text-sm uppercase tracking-widest text-slate-500">Your Cart</p>
               <h2 className="text-2xl font-black text-slate-900">Shopping Bag</h2>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-900 transition-colors"
-              aria-label="Close cart"
-            >
+            <button type="button" onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-900 transition-colors" aria-label="Close cart">
               ✕
             </button>
           </div>
@@ -86,11 +50,16 @@ export default function CartDrawer() {
               <div className="space-y-4">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4 rounded-3xl border border-slate-200 p-4">
-                    <img src={item.image} alt={item.title} className="h-20 w-20 rounded-3xl object-cover" />
+                    <img src={item.image} alt={item.name} className="h-20 w-20 rounded-3xl object-cover" />
                     <div className="flex-1">
-                      <h3 className="font-black text-slate-900 text-sm line-clamp-2">{item.title}</h3>
-                      <p className="text-slate-500 text-[12px] mt-2">Qty: {item.quantity}</p>
-                      <p className="mt-3 text-lg font-black text-slate-900">KSH {item.price.toLocaleString()}</p>
+                      <h3 className="font-black text-slate-900 text-sm line-clamp-2">{item.name}</h3>
+                      <div className="mt-2 flex items-center gap-2">
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-black">-</button>
+                        <span className="text-[12px] font-bold">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-black">+</button>
+                        <button onClick={() => removeFromCart(item.id)} className="ml-2 text-[11px] text-red-500 font-bold uppercase">Remove</button>
+                      </div>
+                      <p className="mt-3 text-lg font-black text-slate-900">KSH {(item.price * item.quantity).toLocaleString()}</p>
                     </div>
                   </div>
                 ))}

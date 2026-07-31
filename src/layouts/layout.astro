@@ -3,17 +3,29 @@ import '../styles/global.css';
 import SearchBar from '../components/SearchBar';
 import CartDrawer from '../components/CartDrawer';
 
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalUrl?: string;
+}
+
+const {
+  title = "Kitchen And All — Commercial Kitchen Equipment, Ruiru, Kenya",
+  description = "Heavy-duty commercial kitchen appliances, refrigeration, and custom stainless steel fabrication in Kenya.",
+  canonicalUrl,
+} = Astro.props;
+
 const navCategories = [
-  { name: "Cooking", subcategories: ["Bakery Appliances", "Burners Jikos Stoves", "Cooking Appliances", "Small Appliances"] },
+  { name: "Cooking", subcategories: ["Bakery Appliances", "Burners/Jikos/Stoves", "Cooking Appliances", "Small Appliances"] },
   { name: "Refrigeration", subcategories: ["Large Appliances", "Hotel Appliances", "Office Kitchen"] },
-  { name: "Food Prep", subcategories: ["Butchery Equipment", "Food Processors", "Measuring Tools Scales", "Home Kitchen"] },
+  { name: "Food Prep", subcategories: ["Butchery Equipment", "Food Processors", "Measuring Tools", "Home Kitchen"] },
   { name: "Stainless Steel", subcategories: ["Juakali Fabrications", "Hotel Appliances"] }
 ];
 
 const allEquipmentItems = [
-  "Bakery Appliances", "Burners Jikos Stoves", "Cooking Appliances",
+  "Bakery Appliances", "Burners/Jikos/Stoves", "Cooking Appliances",
   "Large Appliances", "Hotel Appliances", "Office Kitchen",
-  "Butchery Equipment", "Food Processors", "Measuring Tools Scales",
+  "Butchery Equipment", "Food Processors", "Measuring Tools",
   "Home Kitchen", "Juakali Fabrications"
 ];
 
@@ -25,7 +37,9 @@ function slugify(str: string) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kitchen And All</title>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 </head>
 <body class="min-h-full flex flex-col font-sans bg-white">
 

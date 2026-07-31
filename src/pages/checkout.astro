@@ -1,13 +1,14 @@
 ---
 import Layout from '../layouts/layout.astro';
+import CheckoutForm from '../components/CheckoutForm';
 ---
 
-<Layout>
-  <section class="min-h-[60vh] flex items-center justify-center bg-slate-50 px-4 py-20">
-    <div class="max-w-3xl w-full rounded-3xl bg-white border border-slate-200 p-14 text-center shadow-2xl">
-      <h1 class="text-4xl font-black text-slate-900">Checkout Page</h1>
-      <p class="mt-6 text-slate-600 text-lg">This page is ready for your checkout flow. We'll build the payment experience here later.</p>
-      <a href="/" class="mt-10 inline-flex rounded-full bg-slate-900 px-8 py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-orange-600 transition-all">Return Home</a>
+<Layout title="Checkout — Kitchen And All">
+  <section class="min-h-[60vh] bg-slate-50 px-4 py-16">
+    <div class="max-w-5xl mx-auto">
+      <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tight mb-2">Checkout</h1>
+      <div class="h-1.5 w-20 bg-orange-600 mb-10"></div>
+      <CheckoutForm client:load />
     </div>
   </section>
 </Layout>

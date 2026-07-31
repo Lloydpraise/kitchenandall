@@ -4,9 +4,6 @@
   --background: #fcfcfc;
   --foreground: #0f172a;
   --accent: #ea580c;
-}
-
-@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
@@ -17,6 +14,26 @@ body {
   color: var(--foreground);
   font-family: sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+.prose h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  font-style: italic;
+  margin-top: 1.75rem;
+  margin-bottom: 0.9rem;
+  line-height: 1.35;
+}
+
+.prose a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.prose a:hover {
+  color: #1d4ed8;
 }
 
 @keyframes marquee {
