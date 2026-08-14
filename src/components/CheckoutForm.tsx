@@ -43,7 +43,13 @@ export default function CheckoutForm() {
 
     setIsSubmitting(true);
     clearCart();
-    window.location.href = whatsappUrl;
+    // Open WhatsApp directly
+    if (typeof window !== 'undefined') {
+      window.open(whatsappUrl, '_blank');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
+    }
   };
 
   if (items.length === 0) {

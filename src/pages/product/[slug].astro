@@ -4,6 +4,7 @@ export const prerender = false;
 import Layout from '../../layouts/layout.astro';
 import { supabase } from '../../lib/supabase';
 import ProductDetail from '../../components/ProductDetail';
+import ProductCard from '../../components/productCard';
 
 const { slug } = Astro.params;
 
@@ -12,6 +13,19 @@ const { data: product, error } = await supabase
   .select('*')
   .eq('slug', slug)
   .single();
+
+// Fetch related products from the same category
+let relatedProducts = [];
+if (product) {
+  const { data: related } = await supabase
+    .from('products')
+    .select('*')
+    .eq('sub_category', product.sub_category)
+    .neq('id', product.id)
+    .limit(5);
+  
+  relatedProducts = related || [];
+}
 
 const siteUrl = 'https://YOUR-DOMAIN-HERE.com'; // swap once you have the real domain
 ---
@@ -23,7 +37,26 @@ const siteUrl = 'https://YOUR-DOMAIN-HERE.com'; // swap once you have the real d
 >
   <main class="min-h-[calc(100vh-7rem)] bg-slate-50">
     {product ? (
-      <ProductDetail product={product} client:load />
+      <>
+        <ProductDetail product={product} client:load />
+
+        {/* You May Also Like Section */}
+        {relatedProducts.length > 0 && (
+          <section class="bg-white border-t border-slate-200 py-16">
+            <div class="max-w-7xl mx-auto px-4">
+              <div class="mb-12">
+                <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tight">You May Also Like</h2>
+                <div class="h-1.5 w-20 bg-orange-600 mt-3"></div>
+              </div>
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+                {relatedProducts.map((relatedProduct) => (
+                  <ProductCard product={relatedProduct} client:visible />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+      </>
     ) : (
       <div class="mx-auto flex min-h-[60vh] max-w-4xl items-center justify-center px-4 py-24 text-center">
         <div class="rounded-[2rem] border border-slate-200 bg-white p-16 shadow-2xl">

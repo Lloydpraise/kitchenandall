@@ -1,0 +1,44 @@
+---
+import Layout from '../layouts/layout.astro';
+import ProductCard from '../components/productCard';
+import { supabase } from '../lib/supabase';
+
+const { data: allProducts, error } = await supabase
+  .from('products')
+  .select('*')
+  .order('id', { ascending: true });
+
+if (error) console.error('All products error:', error);
+---
+
+<Layout title="Catalog - Kitchen And All" description="Browse our complete catalog of commercial kitchen equipment">
+  <div class="min-h-screen bg-slate-50">
+    <!-- Page Header -->
+    <section class="bg-slate-900 text-white py-16">
+      <div class="max-w-7xl mx-auto px-4">
+        <h1 class="text-4xl lg:text-5xl font-black uppercase tracking-tighter mb-4">Complete Catalog</h1>
+        <p class="text-slate-300 text-lg max-w-2xl">Browse our full selection of commercial kitchen equipment and solutions for hospitality and foodservice businesses in Kenya.</p>
+      </div>
+    </section>
+
+    <!-- Products Grid -->
+    <main class="max-w-7xl mx-auto px-4 py-16">
+      {(allProducts && allProducts.length > 0) ? (
+        <>
+          <div class="mb-8">
+            <p class="text-slate-600 text-sm font-semibold">Showing {allProducts.length} products</p>
+          </div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+            {allProducts.map((product) => (
+              <ProductCard product={product} client:visible />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div class="text-center py-20">
+          <p class="text-slate-600 text-lg">No products available at the moment.</p>
+        </div>
+      )}
+    </main>
+  </div>
+</Layout>
