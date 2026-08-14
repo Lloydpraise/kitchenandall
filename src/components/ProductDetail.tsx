@@ -14,6 +14,7 @@ export interface Product {
 export default function ProductDetail({ product }: { product: Product }) {
   const [expanded, setExpanded] = useState(false);
   const [toastVisible, setToastVisible] = useState(false);
+  const [questionDrawerOpen, setQuestionDrawerOpen] = useState(false);
   const hasDiscount = Boolean(product.old_price && product.old_price > product.price);
   const discountPercent = useMemo(
     () => hasDiscount ? Math.round(((product.old_price as number) - product.price) / (product.old_price as number) * 100) : 0,
@@ -100,23 +101,30 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
 
               <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.35em] text-slate-500 font-black">Description</p>
-                  </div>
-                  {descriptionText.length > 240 && (
+                <p className="text-sm uppercase tracking-[0.35em] text-slate-500 font-black mb-5">Description</p>
+                <div className="flex flex-wrap items-start gap-1">
+                  <p className="text-base leading-relaxed text-slate-700">
+                    {expanded ? descriptionText : shortDescription}
+                  </p>
+                  {descriptionText.length > 240 && !expanded && (
                     <button
                       type="button"
                       onClick={() => setExpanded(!expanded)}
-                      className="text-sm font-black uppercase tracking-[0.35em] text-orange-600 transition hover:text-orange-500"
+                      className="text-base text-blue-600 underline hover:text-blue-700 transition font-normal whitespace-nowrap"
                     >
-                      {expanded ? 'Show less' : 'Show more'}
+                      Read more
+                    </button>
+                  )}
+                  {expanded && (
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(!expanded)}
+                      className="text-base text-blue-600 underline hover:text-blue-700 transition font-normal whitespace-nowrap ml-1"
+                    >
+                      Read less
                     </button>
                   )}
                 </div>
-                <p className="mt-5 text-base leading-relaxed text-slate-700">
-                  {expanded ? descriptionText : shortDescription}
-                </p>
               </div>
             </div>
 
@@ -149,6 +157,28 @@ export default function ProductDetail({ product }: { product: Product }) {
       </div>
 
       <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-4 py-4 shadow-[0_-20px_50px_rgba(15,23,42,0.14)]">
+        {questionDrawerOpen && (
+          <div className="mb-4 rounded-lg bg-slate-50 p-4 border border-slate-200">
+            <a
+              href={`https://wa.me/254741045143?text=${encodeURIComponent('Hi I am Inquiring about')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-black uppercase text-sm tracking-wider transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-4.99 1.485c-2.873 1.72-4.613 4.47-4.613 7.361 0 2.3.638 4.543 1.848 6.487L2.5 21.5l7.25-1.902c1.863 1.021 3.957 1.56 6.153 1.56 5.803 0 10.5-4.697 10.5-10.5 0-2.822-1.126-5.477-3.175-7.475-2.05-1.997-4.78-3.098-7.65-3.098z"/>
+              </svg>
+              Chat on WhatsApp
+            </a>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setQuestionDrawerOpen(!questionDrawerOpen)}
+          className="mb-2 text-sm font-medium text-blue-600 hover:text-blue-700 underline transition"
+        >
+          {questionDrawerOpen ? '✕ Close' : 'Have a Question?'}
+        </button>
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-slate-500">Total</p>

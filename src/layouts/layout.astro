@@ -16,6 +16,9 @@ const {
   canonicalUrl,
 } = Astro.props;
 
+// Check if we're on a product page
+const isProductPage = Astro.url.pathname.startsWith('/product/');
+
 const navCategories = [
   { name: "Cooking", subcategories: ["Bakery Appliances", "Burners/Jikos/Stoves", "Cooking Appliances", "Small Appliances"] },
   { name: "Refrigeration", subcategories: ["Large Appliances", "Hotel Appliances", "Office Kitchen"] },
@@ -180,6 +183,6 @@ function slugify(str: string) {
     </div>
   </footer>
 
-  <FloatingWhatsApp client:load />
+  <FloatingWhatsApp client:load isProductPage={isProductPage} />
 </body>
 </html>

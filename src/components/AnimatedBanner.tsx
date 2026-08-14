@@ -25,7 +25,7 @@ export default function AnimatedBanner() {
           <motion.div initial={{ scale: 0.9, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-md">
             <h4 className="text-white font-black uppercase tracking-widest mb-4">Start Your Project</h4>
             <p className="text-slate-400 mb-8 font-medium">Turn your empty space into a high-performance commercial kitchen. Send us your requirements.</p>
-            <a href="https://wa.me/254741045143" target="_blank" className="inline-block w-full bg-orange-600 text-white px-10 py-5 rounded-xl font-black uppercase tracking-widest hover:bg-orange-700 text-center transition-all shadow-2xl">Get a Quote</a>
+            <a href="/get-quote" className="inline-block w-full bg-orange-600 text-white px-10 py-5 rounded-xl font-black uppercase tracking-widest hover:bg-orange-700 text-center transition-all shadow-2xl">Get a Quote</a>
           </motion.div>
         </div>
       </div>

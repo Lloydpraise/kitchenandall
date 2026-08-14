@@ -1,9 +1,18 @@
 import React from 'react';
 
-const FloatingWhatsApp = () => {
+interface FloatingWhatsAppProps {
+  isProductPage?: boolean;
+}
+
+const FloatingWhatsApp = ({ isProductPage = false }: FloatingWhatsAppProps) => {
   const phoneNumber = '254741045143';
   const message = 'Hi I am Inquiring about';
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  
+  // Hide on product pages (drawer is used instead on mobile)
+  if (isProductPage) {
+    return null;
+  }
 
   return (
     <a
@@ -17,7 +26,7 @@ const FloatingWhatsApp = () => {
       <img
         src="/whatsappicon.png"
         alt="WhatsApp"
-        className="w-14 h-14 drop-shadow-lg hover:drop-shadow-2xl transition-all duration-200"
+        className="w-12 h-12 sm:w-14 sm:h-14 drop-shadow-lg hover:drop-shadow-2xl transition-all duration-200"
       />
       <span className="text-xs font-bold text-gray-700 text-center whitespace-nowrap">Have A Question?</span>
     </a>

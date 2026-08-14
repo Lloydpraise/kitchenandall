@@ -32,11 +32,22 @@ export default function ProductCard({ product }: { product: Product }) {
     return () => window.clearTimeout(timer);
   }, [toastVisible]);
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if the add to cart button was clicked
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    window.location.href = `/product/${product.slug}`;
+  };
+
   return (
-    <div className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-orange-500 hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
+    <div 
+      onClick={handleCardClick}
+      className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-orange-500 hover:shadow-2xl transition-all duration-500 flex flex-col h-full cursor-pointer"
+    >
       
-      {/* Clickable Image Section */}
-      <a href={`/product/${product.slug}`} className="relative aspect-[4/3] overflow-hidden bg-slate-100 block">
+      {/* Image Section */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 block">
         <img 
           src={product.image_url} 
           alt={product.name}
@@ -49,16 +60,14 @@ export default function ProductCard({ product }: { product: Product }) {
         }`}>
           {isOutOfStock ? '● Out of Stock' : '● In Stock'}
         </div>
-      </a>
+      </div>
 
       <div className="p-6 flex flex-col flex-1">
         <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest italic">Industrial Grade</span>
         
-        <a href={`/product/${product.slug}`}>
-          <h3 className="font-extrabold text-slate-900 text-xl mt-1 group-hover:text-orange-600 transition-colors line-clamp-1">
-            {product.name}
-          </h3>
-        </a>
+        <h3 className="font-extrabold text-slate-900 text-xl mt-1 group-hover:text-orange-600 transition-colors line-clamp-1">
+          {product.name}
+        </h3>
         
         <p className="text-slate-500 text-sm mt-2 line-clamp-2 leading-snug flex-1">
           {product.description}
