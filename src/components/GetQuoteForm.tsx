@@ -10,6 +10,13 @@ export default function GetQuoteForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const trackPixel = (eventName: string, payload: Record<string, unknown> = {}) => {
+    if (typeof window === 'undefined') return;
+    const fbq = (window as typeof window & { fbq?: (...args: any[]) => void }).fbq;
+    if (!fbq) return;
+    fbq('track', eventName, payload);
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage('');
@@ -29,6 +36,13 @@ export default function GetQuoteForm() {
       setErrorMessage('Something went wrong. Please try again or reach us on WhatsApp directly.');
       return;
     }
+
+    trackPixel('Lead', {
+      content_name: 'Quote Request',
+      content_category: 'Lead Generation',
+      currency: 'KES',
+      value: 0,
+    });
 
     setIsSuccess(true);
   };

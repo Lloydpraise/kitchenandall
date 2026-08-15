@@ -13,6 +13,13 @@ export default function CheckoutForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const trackPixel = (eventName: string, payload: Record<string, unknown> = {}) => {
+    if (typeof window === 'undefined') return;
+    const fbq = (window as typeof window & { fbq?: (...args: any[]) => void }).fbq;
+    if (!fbq) return;
+    fbq('track', eventName, payload);
+  };
+
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   useEffect(() => {
@@ -40,6 +47,14 @@ export default function CheckoutForm() {
 
     const message = `Hello! i want the ${itemText} from the website. can i place an order?`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
+
+    trackPixel('InitiateCheckout', {
+      content_ids: items.map((item) => String(item.id)),
+      content_name: 'Checkout',
+      content_category: 'Cart',
+      value: Number(subtotal),
+      currency: 'KES',
+    });
 
     setIsSubmitting(true);
     clearCart();
