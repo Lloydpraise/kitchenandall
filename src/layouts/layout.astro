@@ -46,38 +46,20 @@ function slugify(str: string) {
   {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
   <link rel="icon" href="/logo.ico" />
 
-  <script is:inline>
-    !(function(f, b, e, v, n, t, s) {
-      if (f.fbq) return;
-      n = f.fbq = function() {
-        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-      };
-      if (!f._fbq) f._fbq = n;
-      n.push = n;
-      n.loaded = !0;
-      n.version = '2.0';
-      n.queue = [];
-      t = b.createElement(e);
-      t.async = !0;
-      t.src = v;
-      s = b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t, s);
-    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+<!-- Google Tag Manager -->
+<script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-57XMH7ZT');</script>
+<!-- End Google Tag Manager -->
 
-    window.fbq('init', '1403109695035016');
-    window.fbq('track', 'PageView');
-  </script>
-
-  <noscript>
-    <img
-      height="1"
-      width="1"
-      style="display:none"
-      src="https://www.facebook.com/tr?id=1403109695035016&ev=PageView&noscript=1"
-    />
-  </noscript>
 </head>
 <body class="min-h-full flex flex-col font-sans bg-white">
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57XMH7ZT"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
 
   <div class="bg-slate-900 text-slate-200 py-2 border-b border-slate-800 shrink-0">
     <div class="max-w-7xl mx-auto px-4 flex justify-between items-center text-[12px] font-normal tracking-wide">
@@ -98,8 +80,21 @@ function slugify(str: string) {
     </div>
   </div>
 
-  <nav class="bg-white border-b sticky top-0 z-50 shadow-sm h-24 flex items-center shrink-0">
+  <nav class="bg-white border-b sticky top-0 z-50 shadow-sm h-20 lg:h-24 flex items-center shrink-0">
     <div class="max-w-7xl mx-auto px-4 w-full flex items-center justify-between gap-4">
+      <button
+        type="button"
+        id="mobile-menu-button"
+        class="lg:hidden inline-flex h-11 w-11 shrink-0 items-center justify-center rounded border border-slate-200 text-slate-900 hover:border-orange-600 hover:text-orange-600 transition-colors"
+        aria-label="Open navigation menu"
+        aria-expanded="false"
+        aria-controls="mobile-navigation"
+      >
+        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" />
+        </svg>
+      </button>
+
       <a href="/" class="shrink-0 mr-4">
         <h1 class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase">
           KITCHEN AND ALL
@@ -141,6 +136,76 @@ function slugify(str: string) {
       </div>
     </div>
   </nav>
+
+  <div id="mobile-navigation" class="fixed inset-0 z-[60] invisible opacity-0 transition-opacity duration-200 lg:hidden" aria-hidden="true">
+    <button type="button" class="absolute inset-0 bg-slate-950/50" data-mobile-menu-close aria-label="Close navigation menu"></button>
+    <aside class="relative h-full w-[min(20rem,88vw)] overflow-y-auto bg-white px-6 pb-8 pt-5 shadow-2xl -translate-x-full transition-transform duration-200" data-mobile-menu-panel>
+      <div class="flex items-center justify-between border-b border-slate-200 pb-5">
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Navigation</p>
+        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded text-slate-700 hover:bg-slate-100 hover:text-orange-600" data-mobile-menu-close aria-label="Close navigation menu">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="mt-5 space-y-1">
+        <a href="/" class="block border-b border-slate-100 py-3 text-sm font-black uppercase text-slate-900 hover:text-orange-600">Home</a>
+        <details class="group border-b border-slate-100 py-3">
+          <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-black uppercase text-slate-900 hover:text-orange-600">
+            All Equipment
+            <span class="text-lg leading-none transition-transform group-open:rotate-45">+</span>
+          </summary>
+          <div class="mt-2 space-y-1 pl-3">
+            {allEquipmentItems.map((item) => (
+              <a href={`/category/${slugify(item)}`} class="block py-2 text-xs font-bold uppercase text-slate-600 hover:text-orange-600">{item}</a>
+            ))}
+          </div>
+        </details>
+
+        {navCategories.map((cat) => (
+          <details class="group border-b border-slate-100 py-3">
+            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-bold uppercase text-slate-700 hover:text-orange-600">
+              {cat.name}
+              <span class="text-lg leading-none transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <div class="mt-2 space-y-1 border-l-2 border-orange-600 pl-3">
+              {cat.subcategories.map((sub) => (
+                <a href={`/category/${slugify(sub)}`} class="block py-2 text-xs font-bold uppercase text-slate-600 hover:text-orange-600">{sub}</a>
+              ))}
+            </div>
+          </details>
+        ))}
+
+        <a href="/blogs" class="block border-b border-slate-100 py-3 text-sm font-black uppercase text-slate-900 hover:text-orange-600">Blogs</a>
+        <a href="/get-quote" class="mt-5 block rounded bg-orange-600 px-4 py-3 text-center text-xs font-black uppercase tracking-widest text-white hover:bg-orange-700">Get Quote</a>
+      </div>
+    </aside>
+  </div>
+
+  <script is:inline>
+    const mobileMenu = document.getElementById('mobile-navigation');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenuPanel = mobileMenu?.querySelector('[data-mobile-menu-panel]');
+    const mobileMenuCloseButtons = mobileMenu?.querySelectorAll('[data-mobile-menu-close]');
+
+    const setMobileMenuOpen = (isOpen) => {
+      if (!mobileMenu || !mobileMenuButton || !mobileMenuPanel) return;
+      mobileMenu.classList.toggle('invisible', !isOpen);
+      mobileMenu.classList.toggle('opacity-0', !isOpen);
+      mobileMenuPanel.classList.toggle('-translate-x-full', !isOpen);
+      mobileMenuButton.setAttribute('aria-expanded', String(isOpen));
+      mobileMenuButton.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+      mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+      document.body.classList.toggle('overflow-hidden', isOpen);
+    };
+
+    mobileMenuButton?.addEventListener('click', () => setMobileMenuOpen(true));
+    mobileMenuCloseButtons?.forEach((button) => button.addEventListener('click', () => setMobileMenuOpen(false)));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    });
+  </script>
 
   <main class="flex-grow">
     <slot />

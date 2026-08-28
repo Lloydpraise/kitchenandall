@@ -16,13 +16,6 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [toastVisible, setToastVisible] = useState(false);
   const [questionDrawerOpen, setQuestionDrawerOpen] = useState(false);
 
-  const trackPixel = (eventName: string, payload: Record<string, unknown> = {}) => {
-    if (typeof window === 'undefined') return;
-    const fbq = (window as typeof window & { fbq?: (...args: any[]) => void }).fbq;
-    if (!fbq) return;
-    fbq('track', eventName, payload);
-  };
-
   const hasDiscount = Boolean(product.old_price && product.old_price > product.price);
   const discountPercent = useMemo(
     () => hasDiscount ? Math.round(((product.old_price as number) - product.price) / (product.old_price as number) * 100) : 0,
@@ -44,25 +37,11 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   const handleAddToCart = () => {
     addToCart(itemPayload);
-    trackPixel('AddToCart', {
-      content_ids: [String(product.id)],
-      content_name: product.name,
-      content_category: 'Products',
-      value: Number(product.price),
-      currency: 'KES',
-    });
     setToastVisible(true);
   };
 
   const handleBuyNow = () => {
     addToCart(itemPayload);
-    trackPixel('InitiateCheckout', {
-      content_ids: [String(product.id)],
-      content_name: product.name,
-      content_category: 'Products',
-      value: Number(product.price),
-      currency: 'KES',
-    });
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('added-to-cart-toast', 'true');
     }
@@ -77,16 +56,6 @@ export default function ProductDetail({ product }: { product: Product }) {
     const timer = window.setTimeout(() => setToastVisible(false), 2000);
     return () => window.clearTimeout(timer);
   }, [toastVisible]);
-
-  useEffect(() => {
-    trackPixel('ViewContent', {
-      content_ids: [String(product.id)],
-      content_name: product.name,
-      content_category: 'Products',
-      value: Number(product.price),
-      currency: 'KES',
-    });
-  }, [product.id, product.name, product.price]);
 
   return (
     <div className="relative bg-slate-100 pb-32 lg:pb-0">
