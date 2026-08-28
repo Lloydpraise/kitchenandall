@@ -24,7 +24,7 @@ export const GET: APIRoute = async () => {
     .select('slug')
     .eq('published', true);
 
-  const staticUrls = ['', 'blogs', 'get-quote', 'terms', 'privacy'];
+  const staticUrls = ['', 'blogs', 'get-quote', 'terms', 'privacy', 'shipping', 'returns'];
   const categoryUrls = [...majorCategories, ...subCategories].map((c) => `category/${slugify(c)}`);
   const productUrls = (products || []).map((p: any) => `product/${p.slug}`);
   const postUrls = (posts || []).map((p: any) => `blogs/${p.slug}`);
