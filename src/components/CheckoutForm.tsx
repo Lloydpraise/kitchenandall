@@ -4,6 +4,24 @@ import { cartItems, clearCart } from '../stores/cart';
 
 const WHATSAPP_PHONE = import.meta.env.PUBLIC_WHATSAPP_NUMBER ?? '254741045143';
 
+// Pushes a structured ecommerce event to GTM's dataLayer.
+// content_ids MUST stay numeric product.id (as a string) to match g:id in the
+// Google/Meta product feed — this is the field the catalog match rate checks against.
+function pushCheckoutDataLayerEvent(items: { id: number; name: string; price: number; quantity: number }[]) {
+  if (typeof window === 'undefined') return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: 'begin_checkout',
+    ecommerce: {
+      content_type: 'product',
+      content_ids: items.map((item) => String(item.id)),
+      value: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      currency: 'KES',
+      num_items: items.reduce((sum, item) => sum + item.quantity, 0),
+    },
+  });
+}
+
 export default function CheckoutForm() {
   const items = useStore(cartItems);
   const [customerName, setCustomerName] = useState('');
@@ -40,6 +58,12 @@ export default function CheckoutForm() {
 
     const message = `Hello! i want the ${itemText} from the website. can i place an order?`;
     const whatsappUrl = `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(message)}`;
+
+    // Fires here, not on an actual confirmed order — this flow hands off to
+    // WhatsApp and has no server-side step that confirms a sale went through.
+    // Tracked as begin_checkout (-> Meta InitiateCheckout), not a Purchase event,
+    // so ad optimization isn't trained on unconfirmed "sales."
+    pushCheckoutDataLayerEvent(items);
 
     setIsSubmitting(true);
     clearCart();

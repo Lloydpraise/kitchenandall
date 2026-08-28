@@ -4,11 +4,32 @@ import { addToCart } from '../stores/cart';
 export interface Product {
   id: number;
   name: string;
+  slug: string;
   description: string;
   price: number;
   old_price?: number | null;
   image_url: string;
   stock_quantity: number;
+}
+
+// Pushes a structured ecommerce event to GTM's dataLayer.
+// GTM must be configured (in the GTM UI, not here) to read these fields
+// and forward them to the Meta Pixel tag as content_ids / content_type / value.
+// content_ids MUST stay numeric product.id (as a string) to match g:id in the
+// Google/Meta product feed — this is the field the catalog match rate checks against.
+function pushDataLayerEvent(eventName: string, product: Product) {
+  if (typeof window === 'undefined') return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    event: eventName,
+    ecommerce: {
+      content_type: 'product',
+      content_ids: [String(product.id)],
+      content_name: product.name,
+      value: product.price,
+      currency: 'KES',
+    },
+  });
 }
 
 export default function ProductDetail({ product }: { product: Product }) {
@@ -35,13 +56,22 @@ export default function ProductDetail({ product }: { product: Product }) {
     price: product.price,
   };
 
+  // Fires once when the product page actually renders with product data —
+  // this is the "Product views" event Meta reported as Missing.
+  useEffect(() => {
+    pushDataLayerEvent('view_item', product);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
+
   const handleAddToCart = () => {
     addToCart(itemPayload);
+    pushDataLayerEvent('add_to_cart', product);
     setToastVisible(true);
   };
 
   const handleBuyNow = () => {
     addToCart(itemPayload);
+    pushDataLayerEvent('add_to_cart', product);
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('added-to-cart-toast', 'true');
     }
