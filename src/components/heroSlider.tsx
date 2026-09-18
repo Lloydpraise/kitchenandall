@@ -4,17 +4,17 @@ const slides = [
   {
     title: 'Modern Kitchen Design',
     description: 'Premium appliances and custom fixtures to elevate every cooking space.',
-    image: 'https://i.pinimg.com/1200x/e7/ce/cf/e7cecf08ecf1e0a95e69bc3a537409af.jpg',
+    image: '/images/hero/slide-1.jpg',
   },
   {
     title: 'Stainless Steel Reliability',
     description: 'Durable, hygienic solutions built for busy restaurants and commercial kitchens.',
-    image: 'https://i.pinimg.com/1200x/a1/f6/d4/a1f6d499d2fd273265519054edf35b41.jpg',
+    image: '/images/hero/slide-2.jpg',
   },
   {
     title: 'Professional Food Prep',
     description: 'Smart storage, prep stations, and tools designed for efficient workflow.',
-    image: 'https://i.pinimg.com/736x/ab/41/b7/ab41b70365052130155ff62c5f2f8d65.jpg',
+    image: '/images/hero/slide-3.jpg',
   },
 ];
 

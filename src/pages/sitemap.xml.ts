@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 
 export const prerender = false;
 
-const siteUrl = 'https://YOUR-DOMAIN-HERE.com';
+const siteUrl = 'https://kitchenandall.co.ke';
 
 const majorCategories = ["Cooking", "Refrigeration", "Food Prep", "Stainless Steel"];
 const subCategories = [

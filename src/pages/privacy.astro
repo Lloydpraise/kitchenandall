@@ -8,7 +8,7 @@ import { marked } from 'marked';
 const { data: page } = await supabase
   .from('site_pages')
   .select('*')
-  .eq('slug', 'terms')
+  .eq('slug', 'privacy')
   .single();
 
 const contentHtml = page ? marked.parse(page.content) : '';

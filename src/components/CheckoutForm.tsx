@@ -159,8 +159,11 @@ export default function CheckoutForm() {
             disabled={isSubmitting}
             className="w-full bg-orange-600 disabled:bg-slate-300 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-orange-700 transition-all"
           >
-            {isSubmitting ? 'Placing Order...' : 'Confirm Order via WhatsApp'}
+            {isSubmitting ? 'Opening WhatsApp...' : 'Send Order Request via WhatsApp'}
           </button>
+          <p className="text-xs text-slate-500 text-center leading-relaxed">
+            This sends your order details to us on WhatsApp. No payment is taken on this site — we'll confirm availability, final pricing, and payment with you directly before your order is processed.
+          </p>
         </form>
       </div>
     </div>

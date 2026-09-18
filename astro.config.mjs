@@ -8,7 +8,7 @@ import netlify from '@astrojs/netlify';
 export default defineConfig({
   output: 'server',
   adapter: netlify(),
-  site: 'https://YOUR-DOMAIN-HERE.com',
+  site: 'https://kitchenandall.co.ke',
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()]

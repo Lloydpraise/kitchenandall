@@ -5,17 +5,29 @@ import AnimatedBanner from '../components/AnimatedBanner';
 import ProductCard from '../components/productCard';
 import { supabase } from '../lib/supabase';
 
-const navCategories = [
-  { name: "Cooking", img: "https://i.pinimg.com/1200x/e7/ce/cf/e7cecf08ecf1e0a95e69bc3a537409af.jpg" },
-  { name: "Refrigeration", img: "https://i.pinimg.com/1200x/a1/f6/d4/a1f6d499d2fd273265519054edf35b41.jpg" },
-  { name: "Food Prep", img: "https://i.pinimg.com/736x/ab/41/b7/ab41b70365052130155ff62c5f2f8d65.jpg" },
-  { name: "Stainless Steel", img: "https://i.pinimg.com/1200x/e7/ce/cf/e7cecf08ecf1e0a95e69bc3a537409af.jpg" }
-];
+const categoryNames = ["Cooking", "Refrigeration", "Food Prep", "Stainless Steel"];
+
+const { data: allCategoryProducts, error: categoryImageError } = await supabase
+  .from('products')
+  .select('*')
+  .in('major_category', categoryNames)
+  .order('id', { ascending: true });
+
+if (categoryImageError) console.error('Category image lookup error:', categoryImageError);
+
+const navCategories = categoryNames.map((name) => {
+  const firstProduct = (allCategoryProducts || []).find((product) => product.major_category === name);
+
+  return {
+    name,
+    img: firstProduct?.image_url || `/images/categories/${name.toLowerCase().replace(/\s+/g, '-')}.jpg`
+  };
+});
 
 const { data: featuredProducts, error } = await supabase
   .from('products')
   .select('*')
-  .limit(4);
+  .limit(8);
 
 if (error) console.error('Featured products error:', error);
 ---

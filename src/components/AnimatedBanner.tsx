@@ -6,9 +6,9 @@ export default function AnimatedBanner() {
     <section className="bg-[#0F172A] py-24 relative overflow-hidden">
       <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 0.15 }} className="absolute inset-0 z-0 pointer-events-none">
         <div className="grid grid-cols-3 gap-4 rotate-12 scale-150">
-          <motion.img animate={{ y: [0, -20, 0] }} transition={{ duration: 5, repeat: Infinity }} src="https://i.pinimg.com/1200x/e7/ce/cf/e7cecf08ecf1e0a95e69bc3a537409af.jpg" className="rounded-3xl shadow-2xl" />
-          <motion.img animate={{ y: [0, 20, 0] }} transition={{ duration: 6, repeat: Infinity, delay: 1 }} src="https://i.pinimg.com/1200x/a1/f6/d4/a1f6d499d2fd273265519054edf35b41.jpg" className="rounded-3xl shadow-2xl mt-20" />
-          <motion.img animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, delay: 0.5 }} src="https://i.pinimg.com/736x/ab/41/b7/ab41b70365052130155ff62c5f2f8d65.jpg" className="rounded-3xl shadow-2xl" />
+          <motion.img animate={{ y: [0, -20, 0] }} transition={{ duration: 5, repeat: Infinity }} src="/images/categories/cooking.jpg" className="rounded-3xl shadow-2xl" />
+          <motion.img animate={{ y: [0, 20, 0] }} transition={{ duration: 6, repeat: Infinity, delay: 1 }} src="/images/categories/refrigeration.jpg" className="rounded-3xl shadow-2xl mt-20" />
+          <motion.img animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, delay: 0.5 }} src="/images/categories/food-prep.jpg" className="rounded-3xl shadow-2xl" />
         </div>
       </motion.div>
 
@@ -19,7 +19,7 @@ export default function AnimatedBanner() {
             <div className="space-y-6">
               <div className="flex items-start gap-4"><Ruler className="text-orange-500 shrink-0" size={28} /><p className="text-slate-300 font-medium">Custom measurements and 3D planning for maximum kitchen efficiency.</p></div>
               <div className="flex items-start gap-4"><ShieldCheck className="text-orange-500 shrink-0" size={28} /><p className="text-slate-300 font-medium">304 Food-Grade Stainless Steel for superior hygiene and durability.</p></div>
-              <div className="flex items-start gap-4"><PenTool className="text-orange-500 shrink-0" size={28} /><p className="text-slate-300 font-medium">Hand-crafted in our local Ruiru workshop by expert Kenyan artisans.</p></div>
+              <div className="flex items-start gap-4"><PenTool className="text-orange-500 shrink-0" size={28} /><p className="text-slate-300 font-medium">Hand-crafted in our Nairobi workshop by expert Kenyan artisans.</p></div>
             </div>
           </motion.div>
           <motion.div initial={{ scale: 0.9, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }} className="bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-md">
