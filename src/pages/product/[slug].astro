@@ -5,6 +5,7 @@ import Layout from '../../layouts/layout.astro';
 import { supabase } from '../../lib/supabase';
 import ProductDetail from '../../components/ProductDetail';
 import ProductCard from '../../components/productCard';
+import { parseContent } from '../../lib/productContent';
 
 const { slug } = Astro.params;
 
@@ -28,16 +29,45 @@ if (product) {
 }
 
 const siteUrl = 'https://kitchenandall.co.ke'; // swap once you have the real domain
+
+const content = product ? parseContent(product) : null;
+const canonical = product ? (product.canonical_url || `${siteUrl}/product/${product.slug}`) : undefined;
+// Meta description: the SEO field if present, otherwise the intro (never the whole long description)
+const metaDescription = product
+  ? (product.meta_description || (content?.intro || product.description || '').replace(/\s+/g, ' ').trim().slice(0, 155))
+  : undefined;
+
+// Product structured data for Google. If your Layout already prints Product schema, remove one of them.
+const productJsonLd = product
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      image: product.image_url ? [product.image_url] : undefined,
+      description: metaDescription,
+      sku: String(product.id),
+      url: canonical,
+      offers: {
+        '@type': 'Offer',
+        url: canonical,
+        priceCurrency: 'KES',
+        price: Number(product.price),
+        itemCondition: 'https://schema.org/NewCondition',
+        availability: (product.stock_quantity ?? 20) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      },
+    }
+  : null;
 ---
 
 <Layout
   title={product ? (product.meta_title || product.name) : "Product not found"}
-  description={product ? (product.meta_description || product.description) : undefined}
-  canonicalUrl={product ? (product.canonical_url || `${siteUrl}/product/${product.slug}`) : undefined}
+  description={metaDescription}
+  canonicalUrl={canonical}
 >
   <main class="min-h-[calc(100vh-7rem)] bg-slate-50">
     {product ? (
       <>
+        <script is:inline type="application/ld+json" set:html={JSON.stringify(productJsonLd)} />
         <ProductDetail product={product} client:load />
 
         {/* You May Also Like Section */}

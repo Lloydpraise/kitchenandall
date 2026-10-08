@@ -75,7 +75,7 @@ export default function ProductCard({ product }: { product: Product }) {
         
         <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
           <div>
-            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-tight">Price (Inc. VAT)</span>
+            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-tight">Price Excl. VAT (16%)</span>
             <span className="text-2xl font-black text-slate-900">
               KSH {Number(product.price).toLocaleString()}
             </span>
