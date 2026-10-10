@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { supabase } from '../lib/supabase';
 
 export default function GetQuoteForm() {
@@ -42,8 +43,9 @@ export default function GetQuoteForm() {
           href={`https://wa.me/254741045143?text=${encodeURIComponent(`Hi, I just submitted a quote request as ${name}. I'd like to follow up.`)}`}
           target="_blank"
           rel="noreferrer"
-          className="mt-8 inline-flex rounded-full bg-orange-600 px-8 py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-orange-700 transition-all"
+          className="mt-8 inline-flex items-center gap-3 rounded-full bg-orange-600 px-8 py-4 text-sm font-black uppercase tracking-widest text-white hover:bg-orange-700 transition-all"
         >
+          <WhatsAppIcon chip className="h-5 w-5" />
           Chat on WhatsApp Now
         </a>
       </div>

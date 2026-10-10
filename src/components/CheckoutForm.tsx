@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { useStore } from '@nanostores/react';
 import { cartItems, clearCart } from '../stores/cart';
 
@@ -160,8 +161,9 @@ export default function CheckoutForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-orange-600 disabled:bg-slate-300 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-orange-700 transition-all"
+            className="flex w-full items-center justify-center gap-3 bg-orange-600 disabled:bg-slate-300 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-orange-700 transition-all"
           >
+            <WhatsAppIcon chip className="h-5 w-5" />
             {isSubmitting ? 'Opening WhatsApp...' : 'Send Order Request via WhatsApp'}
           </button>
           <p className="text-xs text-slate-500 text-center leading-relaxed">

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { addToCart } from '../stores/cart';
 import { parseContent, toBlocks } from '../lib/productContent';
+import WhatsAppIcon from './WhatsAppIcon';
 
 export interface Product {
   id: number;
@@ -78,12 +79,6 @@ function Body({ text, lead = false }: { text: string; lead?: boolean }) {
 const CheckIcon = () => (
   <svg aria-hidden="true" viewBox="0 0 20 20" className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" fill="currentColor">
     <path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 111.4-1.4l3.8 3.8 6.8-6.8a1 1 0 011.4 0z" clipRule="evenodd" />
-  </svg>
-);
-
-const WhatsAppIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-4.99 1.485c-2.873 1.72-4.613 4.47-4.613 7.361 0 2.3.638 4.543 1.848 6.487L2.5 21.5l7.25-1.902c1.863 1.021 3.957 1.56 6.153 1.56 5.803 0 10.5-4.697 10.5-10.5 0-2.822-1.126-5.477-3.175-7.475-2.05-1.997-4.78-3.098-7.65-3.098z" />
   </svg>
 );
 
@@ -245,9 +240,9 @@ export default function ProductDetail({ product }: { product: Product }) {
                 href={whatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden lg:flex min-h-[52px] w-full items-center justify-center gap-3 border-2 border-green-500 px-6 py-3 text-sm font-black uppercase tracking-[0.2em] text-green-700 transition hover:bg-green-50"
+                className="hidden lg:flex min-h-[52px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:border-[#25D366] hover:bg-green-50 hover:shadow-md"
               >
-                <WhatsAppIcon />
+                <WhatsAppIcon className="h-6 w-6" />
                 Ask about this product on WhatsApp
               </a>
             </div>
@@ -336,9 +331,9 @@ export default function ProductDetail({ product }: { product: Product }) {
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex shrink-0 items-center gap-3 bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.2em] text-slate-900 transition hover:bg-green-50"
+                    className="inline-flex shrink-0 items-center gap-3 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-green-50"
                   >
-                    <WhatsAppIcon green className="h-6 w-6" />
+                    <WhatsAppIcon className="h-6 w-6" />
                     Chat on WhatsApp
                   </a>
                 </div>
@@ -348,32 +343,21 @@ export default function ProductDetail({ product }: { product: Product }) {
         </section>
       )}
 
-      {/* ───────── Mobile sticky bar ───────── */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-4 py-4 shadow-[0_-20px_50px_rgba(15,23,42,0.14)]">
+      {/* ───────── Mobile sticky bar: price left, Buy right ───────── */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(15,23,42,0.12)]">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-lg font-black text-slate-900">KSH {Number(product.price).toLocaleString()}</p>
+          <div className="min-w-0">
+            <p className="truncate text-xl font-black leading-tight text-slate-900">KSH {Number(product.price).toLocaleString()}</p>
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Price excl. VAT (16%)</p>
           </div>
-          <div className="flex items-center gap-3">
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Ask about this product on WhatsApp"
-              className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center border-2 border-green-500 bg-white transition hover:bg-green-50"
-            >
-              <WhatsAppIcon green className="h-7 w-7" />
-            </a>
-            <button
-              type="button"
-              disabled={isOutOfStock}
-              onClick={handleBuyNow}
-              className="inline-flex min-h-[52px] items-center justify-center rounded-none bg-orange-600 px-6 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-            >
-              Buy now
-            </button>
-          </div>
+          <button
+            type="button"
+            disabled={isOutOfStock}
+            onClick={handleBuyNow}
+            className="inline-flex min-h-[52px] min-w-[150px] shrink-0 items-center justify-center rounded-xl bg-orange-600 px-8 text-base font-black uppercase tracking-widest text-white shadow-lg shadow-orange-600/30 transition active:scale-[0.98] hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+          >
+            Buy now
+          </button>
         </div>
       </div>
 

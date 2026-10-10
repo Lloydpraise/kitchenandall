@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { X } from 'lucide-react';
 
 export default function MarketingPopup() {
@@ -25,8 +26,9 @@ export default function MarketingPopup() {
             href="https://wa.me/254741045143"
             target="_blank"
             onClick={() => setShowPopup(false)}
-            className="mt-8 block w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl transition-all shadow-lg uppercase tracking-widest text-center"
+            className="mt-8 flex w-full items-center justify-center gap-3 bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl transition-all shadow-lg uppercase tracking-widest text-center"
           >
+            <WhatsAppIcon chip className="h-5 w-5" />
             Chat on WhatsApp
           </a>
         </div>

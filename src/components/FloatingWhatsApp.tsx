@@ -28,7 +28,7 @@ const FloatingWhatsApp = ({ isProductPage = false }: FloatingWhatsAppProps) => {
         alt="WhatsApp"
         className="w-12 h-12 sm:w-14 sm:h-14 drop-shadow-lg hover:drop-shadow-2xl transition-all duration-200"
       />
-      <span className="text-xs font-bold text-gray-700 text-center whitespace-nowrap">Have A Question?</span>
+      <span className="hidden sm:block text-xs font-bold text-gray-700 text-center whitespace-nowrap">Have A Question?</span>
     </a>
   );
 };

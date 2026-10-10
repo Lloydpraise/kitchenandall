@@ -1,8 +1,16 @@
 interface WhatsAppIconProps {
   className?: string;
-  green?: boolean;
+  /** Wrap the icon in a white circle so it stays visible on coloured buttons. */
+  chip?: boolean;
 }
 
-export default function WhatsAppIcon({ className = 'h-5 w-5', green = false }: WhatsAppIconProps) {
-  return <img src={green ? '/whatsapp-green.svg' : '/whatsapp-svgrepo-com.svg'} alt="" aria-hidden="true" className={className} />;
+// The one WhatsApp icon used site-wide (public/whatsapp-green.svg).
+export default function WhatsAppIcon({ className = 'h-5 w-5', chip = false }: WhatsAppIconProps) {
+  const icon = <img src="/whatsapp-green.svg" alt="" aria-hidden="true" className={className} />;
+  if (!chip) return icon;
+  return (
+    <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm">
+      {icon}
+    </span>
+  );
 }
