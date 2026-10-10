@@ -60,6 +60,7 @@ export default function CartDrawer() {
                         <button onClick={() => removeFromCart(item.id)} className="ml-2 text-[11px] text-red-500 font-bold uppercase">Remove</button>
                       </div>
                       <p className="mt-3 text-lg font-black text-slate-900">KSH {(item.price * item.quantity).toLocaleString()}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">excl. VAT</p>
                     </div>
                   </div>
                 ))}
@@ -69,7 +70,7 @@ export default function CartDrawer() {
 
           <div className="border-t border-slate-200 p-5">
             <div className="flex items-center justify-between text-slate-500 uppercase tracking-widest text-xs font-black">
-              <span>Subtotal</span>
+              <span>Subtotal <span className="normal-case tracking-normal font-bold text-slate-400">(excl. VAT)</span></span>
               <span>KSH {subtotal.toLocaleString()}</span>
             </div>
             <a

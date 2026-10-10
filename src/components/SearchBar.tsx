@@ -65,7 +65,7 @@ export default function SearchBar() {
               </div>
               <div className="flex flex-col">
                 <span className="text-[12px] font-medium text-slate-700 line-clamp-1">{product.name}</span>
-                <span className="text-[10px] font-black text-orange-600 uppercase tracking-tighter">Ksh {product.price.toLocaleString()}</span>
+                <span className="text-[10px] font-black text-orange-600 uppercase tracking-tighter">Ksh {product.price.toLocaleString()} <span className="text-slate-400 font-bold">excl. VAT</span></span>
               </div>
             </a>
           ))}

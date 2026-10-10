@@ -106,12 +106,15 @@ export default function CheckoutForm() {
                 <p className="font-bold text-slate-900 text-sm">{item.name}</p>
                 <p className="text-slate-500 text-xs mt-1">Qty: {item.quantity}</p>
               </div>
-              <p className="font-black text-slate-900">Ksh {(item.price * item.quantity).toLocaleString()}</p>
+              <div className="text-right">
+                <p className="font-black text-slate-900">Ksh {(item.price * item.quantity).toLocaleString()}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">excl. VAT</p>
+              </div>
             </div>
           ))}
         </div>
         <div className="mt-6 flex justify-between text-lg font-black text-slate-900 border-t border-slate-200 pt-4">
-          <span>Total</span>
+          <span>Total <span className="text-xs font-bold uppercase tracking-wider text-slate-400">(excl. VAT)</span></span>
           <span>Ksh {subtotal.toLocaleString()}</span>
         </div>
       </div>

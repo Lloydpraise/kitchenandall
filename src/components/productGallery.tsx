@@ -114,6 +114,7 @@ export default function ProductGallery({ products }: { products: Product[] }) {
                     </span>
                   )}
                 </div>
+                <p className="-mt-3 mb-4 text-[10px] font-bold uppercase tracking-tight text-slate-400">Price excl. VAT (16%)</p>
 
                 {/* Call to Action */}
                 <button 

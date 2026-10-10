@@ -89,7 +89,6 @@ const WhatsAppIcon = () => (
 
 export default function ProductDetail({ product }: { product: Product }) {
   const [toastVisible, setToastVisible] = useState(false);
-  const [questionDrawerOpen, setQuestionDrawerOpen] = useState(false);
 
   const hasDiscount = Boolean(product.old_price && product.old_price > product.price);
   const discountPercent = useMemo(
@@ -337,9 +336,9 @@ export default function ProductDetail({ product }: { product: Product }) {
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex shrink-0 items-center gap-3 bg-green-500 px-6 py-3 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:bg-green-600"
+                    className="inline-flex shrink-0 items-center gap-3 bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.2em] text-slate-900 transition hover:bg-green-50"
                   >
-                    <WhatsAppIcon />
+                    <WhatsAppIcon green className="h-6 w-6" />
                     Chat on WhatsApp
                   </a>
                 </div>
@@ -351,39 +350,30 @@ export default function ProductDetail({ product }: { product: Product }) {
 
       {/* ───────── Mobile sticky bar ───────── */}
       <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-4 py-4 shadow-[0_-20px_50px_rgba(15,23,42,0.14)]">
-        {questionDrawerOpen && (
-          <div className="mb-4 rounded-lg bg-slate-50 p-4 border border-slate-200">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-lg font-black text-slate-900">KSH {Number(product.price).toLocaleString()}</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Price excl. VAT (16%)</p>
+          </div>
+          <div className="flex items-center gap-3">
             <a
               href={whatsappHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-black uppercase text-sm tracking-wider transition"
+              aria-label="Ask about this product on WhatsApp"
+              className="inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center border-2 border-green-500 bg-white transition hover:bg-green-50"
             >
-              <WhatsAppIcon />
-              Chat on WhatsApp
+              <WhatsAppIcon green className="h-7 w-7" />
             </a>
+            <button
+              type="button"
+              disabled={isOutOfStock}
+              onClick={handleBuyNow}
+              className="inline-flex min-h-[52px] items-center justify-center rounded-none bg-orange-600 px-6 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+            >
+              Buy now
+            </button>
           </div>
-        )}
-        <button
-          type="button"
-          onClick={() => setQuestionDrawerOpen(!questionDrawerOpen)}
-          className="mb-2 text-sm font-medium text-blue-600 hover:text-blue-700 underline transition"
-        >
-          {questionDrawerOpen ? '✕ Close' : 'Have a Question?'}
-        </button>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.35em] text-slate-500">Total</p>
-            <p className="text-lg font-black text-slate-900">KSH {Number(product.price).toLocaleString()}</p>
-          </div>
-          <button
-            type="button"
-            disabled={isOutOfStock}
-            onClick={handleBuyNow}
-            className="inline-flex min-h-[52px] items-center justify-center rounded-none bg-orange-600 px-6 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-          >
-            Buy now
-          </button>
         </div>
       </div>
 
