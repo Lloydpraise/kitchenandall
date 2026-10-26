@@ -3,39 +3,27 @@ import '../styles/global.css';
 import SearchBar from '../components/SearchBar';
 import CartDrawer from '../components/CartDrawer';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
+import { categories, categoryUrl, subCategoryUrl } from '../lib/categories';
 
 interface Props {
   title?: string;
   description?: string;
   canonicalUrl?: string;
+  noindex?: boolean;
 }
 
 const {
   title = "Kitchen And All — Commercial Kitchen Equipment, Nairobi, Kenya",
   description = "Heavy-duty commercial kitchen appliances, refrigeration, and custom stainless steel fabrication in Kenya.",
   canonicalUrl,
+  noindex = false,
 } = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const activeCategory = categories.find((c) => currentPath === categoryUrl(c) || currentPath.startsWith(`${categoryUrl(c)}/`));
 
 // Check if we're on a product page
 const isProductPage = Astro.url.pathname.startsWith('/product/');
-
-const navCategories = [
-  { name: "Cooking", subcategories: ["Bakery Appliances", "Burners/Jikos/Stoves", "Cooking Appliances", "Small Appliances"] },
-  { name: "Refrigeration", subcategories: ["Large Appliances", "Hotel Appliances", "Office Kitchen"] },
-  { name: "Food Prep", subcategories: ["Butchery Equipment", "Food Processors", "Measuring Tools", "Home Kitchen"] },
-  { name: "Stainless Steel", subcategories: ["Juakali Fabrications", "Hotel Appliances"] }
-];
-
-const allEquipmentItems = [
-  "Bakery Appliances", "Burners/Jikos/Stoves", "Cooking Appliances",
-  "Large Appliances", "Hotel Appliances", "Office Kitchen",
-  "Butchery Equipment", "Food Processors", "Measuring Tools",
-  "Home Kitchen", "Juakali Fabrications"
-];
-
-function slugify(str: string) {
-  return str.toLowerCase().replace(/[\s/]+/g, '-');
-}
 
 const socialLinks = [
   {
@@ -67,6 +55,7 @@ const socialLinks = [
   <title>{title}</title>
   <meta name="description" content={description} />
   {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+  {noindex && <meta name="robots" content="noindex, follow" />}
   <link rel="icon" href="/logo.ico" />
 
 <!-- Google Tag Manager -->
@@ -127,29 +116,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <div class="hidden lg:flex items-center flex-1 justify-center gap-1">
         <a href="/" class="px-3 py-2 font-black text-[11px] text-slate-800 hover:text-orange-600 uppercase">Home</a>
 
-        <div class="group relative h-24 flex items-center mr-2">
-          <button class="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white rounded font-black text-[10px] hover:bg-orange-600 transition-all uppercase tracking-widest">
-            All Equipment
+        <div class="relative h-24 flex items-center mr-2" data-mega>
+          <button type="button" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded font-black text-[10px] hover:bg-orange-600 transition-all uppercase tracking-widest" aria-expanded="false" aria-controls="mega-menu" data-mega-button>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" /></svg>
+            Shop by Category
           </button>
-          <div class="absolute top-24 left-0 w-64 bg-white border border-slate-100 shadow-2xl rounded-b-2xl py-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-            {allEquipmentItems.map((item) => (
-              <a href={`/category/${slugify(item)}`} class="block px-6 py-2.5 text-[11px] font-black text-slate-800 hover:text-orange-600 uppercase transition-colors">{item}</a>
-            ))}
-          </div>
         </div>
 
-        {navCategories.map((cat) => (
-          <div class="group relative h-24 flex items-center">
-            <button class="px-3 py-2 font-bold text-[11px] text-slate-600 group-hover:text-orange-600 uppercase">{cat.name}</button>
-            <div class="absolute top-24 left-1/2 -translate-x-1/2 w-64 bg-white border shadow-2xl rounded-b-2xl py-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-              {cat.subcategories.map((sub) => (
-                <a href={`/category/${slugify(sub)}`} class="block px-6 py-2.5 text-[12px] text-slate-600 hover:text-orange-600 border-l-4 border-transparent hover:border-orange-600 font-bold uppercase transition-all">{sub}</a>
-              ))}
-            </div>
-          </div>
-        ))}
+        <a href="/catalog" class="px-3 py-2 font-bold text-[11px] text-slate-600 hover:text-orange-600 uppercase">All Products</a>
+        <a href="/blogs" class="px-3 py-2 font-bold text-[11px] text-slate-600 hover:text-orange-600 uppercase">Blogs</a>
+        <a href="/category/stainless-steel-fabrication" class="hidden xl:inline-block px-3 py-2 font-bold text-[11px] text-slate-600 hover:text-orange-600 uppercase">Custom Fabrication</a>
 
-        <div class="w-full max-w-[220px] ml-4">
+        <div class="w-full max-w-[220px] xl:max-w-[260px] ml-4">
           <SearchBar client:load />
         </div>
       </div>
@@ -158,7 +136,51 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <CartDrawer client:load />
       </div>
     </div>
+    <div id="mega-menu" class="hidden lg:block absolute inset-x-0 top-full z-40 invisible opacity-0 transition-opacity duration-150" data-mega-panel>
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="max-h-[calc(100vh-7rem)] overflow-y-auto rounded-b-2xl border border-slate-100 bg-white p-8 shadow-2xl">
+          <div class="grid grid-cols-4 gap-x-8 gap-y-7">
+            {categories.map((cat) => (
+              <div>
+                <a href={categoryUrl(cat)} class="block text-[12px] font-black uppercase tracking-wide text-slate-900 hover:text-orange-600 border-b-2 border-orange-600 pb-1.5 mb-2">{cat.name}</a>
+                <ul class="space-y-1">
+                  {cat.subs.map((sub) => (
+                    <li><a href={subCategoryUrl(cat, sub)} class="block py-0.5 text-[12px] text-slate-600 hover:text-orange-600 hover:translate-x-0.5 transition-all">{sub.name}</a></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div class="mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
+            <a href="/category" class="text-[11px] font-black uppercase tracking-widest text-orange-600 hover:underline">See all categories</a>
+            <a href="/get-quote" class="text-[11px] font-black uppercase tracking-widest text-slate-700 hover:text-orange-600">Need it made to size? Get a quote</a>
+          </div>
+        </div>
+      </div>
+    </div>
   </nav>
+
+  <div class="bg-white border-b border-slate-200 shrink-0 relative z-40">
+    <nav aria-label="Categories" data-scroll-active class="max-w-7xl mx-auto px-4 flex gap-1 lg:gap-0 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:overflow-visible lg:flex-wrap lg:justify-center xl:justify-between">
+      {categories.map((cat, i) => (
+        <div class="group relative shrink-0">
+          <a href={categoryUrl(cat)} aria-current={activeCategory?.slug === cat.slug ? 'page' : undefined} class={`flex items-center gap-1 lg:gap-0.5 whitespace-nowrap rounded-full px-3 lg:px-2 py-1.5 text-[11px] lg:text-[10.5px] font-bold uppercase tracking-wide lg:tracking-normal transition-colors ${activeCategory?.slug === cat.slug ? 'bg-orange-600 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-orange-600 lg:group-hover:bg-slate-100 lg:group-hover:text-orange-600'}`}>
+            {cat.menuName}
+            <svg class="hidden lg:block h-2.5 w-2.5 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </a>
+          {/* desktop: the sub-categories drop down on hover or keyboard focus */}
+          <div class={`hidden lg:block absolute top-full pt-2 w-64 invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0 transition-all duration-150 z-50 ${i >= categories.length - 3 ? 'right-0' : 'left-0'}`}>
+            <div class="rounded-xl border border-slate-100 bg-white py-2 shadow-2xl">
+              <a href={categoryUrl(cat)} class="block px-4 py-2 text-[11px] font-black uppercase tracking-wide text-orange-600 hover:bg-slate-50">All {cat.name}</a>
+              {cat.subs.map((sub) => (
+                <a href={subCategoryUrl(cat, sub)} class="block px-4 py-2 text-[13px] text-slate-700 hover:bg-slate-50 hover:text-orange-600 border-l-2 border-transparent hover:border-orange-600">{sub.name}</a>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </nav>
+  </div>
 
   <div id="mobile-navigation" class="fixed inset-0 z-[60] invisible opacity-0 transition-opacity duration-200 lg:hidden" aria-hidden="true">
     <button type="button" class="absolute inset-0 bg-slate-950/50" data-mobile-menu-close aria-label="Close navigation menu"></button>
@@ -172,34 +194,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </button>
       </div>
 
-      <div class="mt-5 space-y-1">
-        <a href="/" class="block border-b border-slate-100 py-3 text-sm font-black uppercase text-slate-900 hover:text-orange-600">Home</a>
-        <details class="group border-b border-slate-100 py-3">
-          <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-black uppercase text-slate-900 hover:text-orange-600">
-            All Equipment
-            <span class="text-lg leading-none transition-transform group-open:rotate-45">+</span>
-          </summary>
-          <div class="mt-2 space-y-1 pl-3">
-            {allEquipmentItems.map((item) => (
-              <a href={`/category/${slugify(item)}`} class="block py-2 text-xs font-bold uppercase text-slate-600 hover:text-orange-600">{item}</a>
-            ))}
-          </div>
-        </details>
+      <div class="mt-5">
+        <SearchBar client:idle />
+      </div>
 
-        {navCategories.map((cat) => (
-          <details class="group border-b border-slate-100 py-3">
-            <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-bold uppercase text-slate-700 hover:text-orange-600">
+      <div class="mt-4 space-y-1">
+        <a href="/" class="block border-b border-slate-100 py-3 text-sm font-black uppercase text-slate-900 hover:text-orange-600">Home</a>
+        <p class="pt-4 pb-1 text-[10px] font-black uppercase tracking-[0.25em] text-orange-600">Shop by category</p>
+        {categories.map((cat) => (
+          <details class="group border-b border-slate-100" open={activeCategory?.slug === cat.slug}>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-[13px] font-bold uppercase text-slate-800 hover:text-orange-600 [&::-webkit-details-marker]:hidden">
               {cat.name}
-              <span class="text-lg leading-none transition-transform group-open:rotate-45">+</span>
+              <svg class="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </summary>
-            <div class="mt-2 space-y-1 border-l-2 border-orange-600 pl-3">
-              {cat.subcategories.map((sub) => (
-                <a href={`/category/${slugify(sub)}`} class="block py-2 text-xs font-bold uppercase text-slate-600 hover:text-orange-600">{sub}</a>
+            <div class="mb-3 space-y-0.5 border-l-2 border-orange-600 pl-3">
+              <a href={categoryUrl(cat)} class="block py-2 text-xs font-black uppercase text-orange-600">View all {cat.name}</a>
+              {cat.subs.map((sub) => (
+                <a href={subCategoryUrl(cat, sub)} aria-current={currentPath === subCategoryUrl(cat, sub) ? 'page' : undefined} class="block py-2 text-[13px] font-semibold text-slate-600 hover:text-orange-600">{sub.name}</a>
               ))}
             </div>
           </details>
         ))}
 
+        <a href="/catalog" class="block border-b border-slate-100 py-3 mt-3 text-sm font-black uppercase text-slate-900 hover:text-orange-600">All Products</a>
         <a href="/blogs" class="block border-b border-slate-100 py-3 text-sm font-black uppercase text-slate-900 hover:text-orange-600">Blogs</a>
         <a href="/get-quote" class="mt-5 block rounded bg-orange-600 px-4 py-3 text-center text-xs font-black uppercase tracking-widest text-white hover:bg-orange-700">Get Quote</a>
       </div>
@@ -226,7 +243,39 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     mobileMenuButton?.addEventListener('click', () => setMobileMenuOpen(true));
     mobileMenuCloseButtons?.forEach((button) => button.addEventListener('click', () => setMobileMenuOpen(false)));
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') setMobileMenuOpen(false);
+      if (event.key === 'Escape') { setMobileMenuOpen(false); setMegaOpen(false); }
+    });
+
+    // Scroll rows of category chips so the current one is visible on small screens
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[data-scroll-active]').forEach((row) => {
+        const current = row.querySelector('[aria-current="page"]');
+        if (current) row.scrollLeft = current.offsetLeft - row.offsetLeft - (row.clientWidth - current.clientWidth) / 2;
+      });
+    });
+
+    // Desktop "Shop by Category" mega menu: opens on hover, click (touch screens) or keyboard
+    const mega = document.querySelector('[data-mega]');
+    const megaButton = document.querySelector('[data-mega-button]');
+    const megaPanel = document.querySelector('[data-mega-panel]');
+    let megaTimer;
+    const setMegaOpen = (isOpen) => {
+      if (!megaPanel || !megaButton) return;
+      window.clearTimeout(megaTimer);
+      megaPanel.classList.toggle('invisible', !isOpen);
+      megaPanel.classList.toggle('opacity-0', !isOpen);
+      megaButton.setAttribute('aria-expanded', String(isOpen));
+    };
+    const closeMegaSoon = () => { megaTimer = window.setTimeout(() => setMegaOpen(false), 180); };
+    [mega, megaPanel].forEach((el) => {
+      el?.addEventListener('mouseenter', () => setMegaOpen(true));
+      el?.addEventListener('mouseleave', closeMegaSoon);
+    });
+    megaButton?.addEventListener('click', () => setMegaOpen(megaButton.getAttribute('aria-expanded') !== 'true'));
+    megaPanel?.addEventListener('focusin', () => setMegaOpen(true));
+    megaPanel?.addEventListener('focusout', (e) => { if (!megaPanel.contains(e.relatedTarget)) closeMegaSoon(); });
+    document.addEventListener('click', (e) => {
+      if (mega && megaPanel && !mega.contains(e.target) && !megaPanel.contains(e.target)) setMegaOpen(false);
     });
   </script>
 
@@ -246,6 +295,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <h3 class="text-white font-black uppercase tracking-widest text-sm mb-4">Quick links</h3>
           <ul class="space-y-3 text-slate-400 text-sm">
             <li><a href="/" class="hover:text-orange-500 transition-colors">Home</a></li>
+            <li><a href="/category" class="hover:text-orange-500 transition-colors">All Categories</a></li>
+            <li><a href="/catalog" class="hover:text-orange-500 transition-colors">All Products</a></li>
             <li><a href="/blogs" class="hover:text-orange-500 transition-colors">Blogs</a></li>
             <li><a href="/get-quote" class="hover:text-orange-500 transition-colors">Get Quote</a></li>
           </ul>
@@ -279,6 +330,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </div>
         </div>
       </div>
+
+      <nav aria-label="Footer categories" class="mt-12 border-t border-slate-800 pt-8">
+        <h3 class="text-white font-black uppercase tracking-widest text-sm mb-4">Shop by category</h3>
+        <ul class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-slate-400 sm:grid-cols-3 lg:grid-cols-4">
+          {categories.map((cat) => (
+            <li><a href={categoryUrl(cat)} class="hover:text-orange-500 transition-colors">{cat.name}</a></li>
+          ))}
+        </ul>
+      </nav>
 
       <div class="mt-12 flex flex-col gap-6 border-t border-slate-800 pt-6 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex flex-wrap items-center gap-4 text-slate-400">

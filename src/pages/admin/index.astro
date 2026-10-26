@@ -23,9 +23,10 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     :root { --bg:#f6f6f4; --card:#fff; --ink:#1b1b1b; --muted:#6b6b6b; --line:#e3e3df; --brand:#b45309; --ok:#15803d; --bad:#b91c1c; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--ink); }
-    header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--card); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+    .top { position:sticky; top:0; z-index:5; background:var(--card); border-bottom:1px solid var(--line); }
+    header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px 6px; }
     header h1 { font-size:16px; margin:0; }
-    main { max-width:1000px; margin:0 auto; padding:16px; }
+    main { max-width:1100px; margin:0 auto; padding:16px; }
     button { font:inherit; cursor:pointer; border-radius:8px; border:1px solid var(--line); background:var(--card); padding:8px 12px; }
     button.primary { background:var(--brand); border-color:var(--brand); color:#fff; }
     button:disabled { opacity:.5; cursor:default; }
@@ -36,21 +37,83 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     .msg { padding:10px 12px; border-radius:8px; margin-bottom:12px; font-size:14px; background:#fef2f2; color:var(--bad); }
     .bar { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
     .count { color:var(--muted); font-size:13px; margin-bottom:8px; }
-    .card { display:grid; grid-template-columns:240px 1fr; gap:20px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px; }
-    .thumb { width:100%; aspect-ratio:1 / 1; border-radius:10px; background:#eee center/cover no-repeat; border:1px solid var(--line); position:relative; cursor:pointer; overflow:hidden; }
+    #list-all, #list-prices { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:16px; align-items:start; }
+    .card { display:flex; flex-direction:column; gap:12px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px; }
+    .thumb { width:100%; aspect-ratio:1 / 1; border-radius:10px; background:#eee center/cover no-repeat; border:1px solid var(--line); position:relative; cursor:pointer; overflow:hidden; flex:none; }
     .thumb .empty { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px; }
     .thumb .chg { position:absolute; inset:auto 0 0 0; background:rgba(0,0,0,.6); color:#fff; font-size:14px; font-weight:600; text-align:center; padding:10px 0; }
-    .fields { min-width:0; display:flex; flex-direction:column; gap:14px; }
+    .fields { min-width:0; display:flex; flex-direction:column; gap:10px; }
     label.lbl { display:block; font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px; }
-    textarea.name { font:inherit; font-size:18px; line-height:1.4; width:100%; min-height:84px; padding:12px; border:1px solid var(--line); border-radius:10px; resize:vertical; background:#fff; }
-    input.price { font-size:22px !important; font-weight:600; padding:12px !important; }
+    textarea.name { font:inherit; font-size:16px; line-height:1.35; width:100%; min-height:58px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; resize:none; background:#fff; }
+    input.price { font-size:17px !important; font-weight:600; padding:10px 12px !important; }
+    .phint { font-size:12px; color:var(--muted); margin-top:4px; }
+    .topnote { font-size:12px; color:var(--muted); margin:0 0 10px; }
+    a.live { display:inline-block; font-size:14px; padding:7px 12px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--ink); text-decoration:none; white-space:nowrap; }
     textarea:focus, input:focus { outline:2px solid var(--brand); outline-offset:1px; }
     .meta { font-size:13px; color:var(--muted); }
-    .foot { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:auto; }
+    .foot { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .foot .acts { display:flex; gap:8px; margin-left:auto; }
     .foot button { padding:7px 16px; font-size:14px; }
     .status { font-size:14px; min-height:18px; } .status.ok { color:var(--ok); } .status.bad { color:var(--bad); }
     .more { text-align:center; margin:16px 0; }
-    @media (max-width:640px) { main { padding:12px; } .card { grid-template-columns:1fr; gap:14px; padding:12px; } .thumb { aspect-ratio:4 / 3; } textarea.name { font-size:17px; } }
+    .seo-badge { position:absolute; top:8px; left:8px; z-index:2; pointer-events:none; background:var(--ok); color:#fff; font-size:10px; font-weight:800; letter-spacing:.05em; padding:4px 8px; border-radius:999px; box-shadow:0 1px 4px rgba(0,0,0,.3); }
+    .card.gone { opacity:0; transform:scale(.97); transition:opacity .3s, transform .3s; }
+    .tabs { display:flex; gap:6px; padding:6px 12px 10px; overflow-x:auto; }
+    .tabs button { white-space:nowrap; padding:10px 14px; border-radius:999px; font-weight:600; font-size:15px; }
+    .tabs button.on { background:var(--ink); border-color:var(--ink); color:#fff; }
+    .pill { display:inline-block; min-width:20px; padding:1px 6px; margin-left:4px; border-radius:999px; background:var(--brand); color:#fff; font-size:12px; text-align:center; }
+    .pill:empty { display:none; }
+    .seg { display:flex; gap:0; margin-bottom:12px; border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card); }
+    .seg button { flex:1; border:0; border-radius:0; padding:12px 8px; font-weight:600; background:transparent; }
+    .seg button.on { background:var(--ink); color:#fff; }
+    .rrow { display:flex; gap:12px; align-items:center; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px; margin-bottom:10px; cursor:pointer; min-height:76px; }
+    .rrow:active { background:#faf7f2; }
+    .rth { width:60px; height:60px; border-radius:8px; background:#eee center/cover no-repeat; flex:none; border:1px solid var(--line); }
+    .rmain { min-width:0; flex:1; }
+    .rname { font-weight:600; font-size:15px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .rsub { font-size:12px; color:var(--muted); margin-top:3px; }
+    .chev { color:var(--muted); font-size:24px; flex:none; }
+    .info { padding:12px; border-radius:8px; margin-bottom:12px; font-size:14px; background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+    .empty-state { text-align:center; color:var(--muted); padding:40px 12px; }
+    .ed { position:fixed; inset:0; background:var(--bg); z-index:20; display:flex; flex-direction:column; }
+    .ed[hidden] { display:none; }
+    .edtop { background:var(--card); border-bottom:1px solid var(--line); padding:8px 12px; }
+    .edhead { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .edhead .t { flex:1; min-width:0; font-weight:700; font-size:15px; line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .edhead a { font-size:13px; color:var(--brand); white-space:nowrap; }
+    .edtabs { display:flex; gap:6px; }
+    .edtabs button { flex:1; padding:10px; font-weight:600; }
+    .edtabs button.on { background:var(--ink); border-color:var(--ink); color:#fff; }
+    .tag { display:inline-block; font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; margin-right:6px; }
+    .tag.ok { background:#dcfce7; color:var(--ok); } .tag.wait { background:#fef3c7; color:#92400e; }
+    .edbody { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px; }
+    .edin { max-width:760px; margin:0 auto; }
+    .edbar { background:var(--card); border-top:1px solid var(--line); padding:10px 12px calc(10px + env(safe-area-inset-bottom)); display:flex; gap:10px; }
+    .edbar button { flex:1; padding:14px 10px; font-size:16px; font-weight:600; }
+    details.grp { background:var(--card); border:1px solid var(--line); border-radius:12px; margin-bottom:12px; }
+    details.grp > summary { padding:16px 14px; font-weight:700; font-size:16px; cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+    details.grp > summary::-webkit-details-marker { display:none; }
+    details.grp > summary::after { content:'+'; font-size:22px; color:var(--muted); }
+    details.grp[open] > summary::after { content:'–'; }
+    .grp .in { padding:0 14px 14px; display:flex; flex-direction:column; gap:12px; }
+    .item { border:1px solid var(--line); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px; background:#fafaf8; }
+    .irow { display:flex; gap:6px; justify-content:flex-end; }
+    button.sm { padding:8px 12px; font-size:14px; }
+    button.add { align-self:flex-start; font-weight:600; }
+    textarea.ta { font:inherit; width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; resize:vertical; min-height:96px; background:#fff; line-height:1.45; }
+    .hint { font-size:12px; color:var(--muted); margin-top:4px; }
+    .pv { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; line-height:1.6; }
+    .pv img { width:100%; aspect-ratio:1 / 1; object-fit:cover; border-radius:10px; margin-bottom:12px; }
+    .pv h1 { font-size:21px; margin:0 0 10px; line-height:1.25; }
+    .pv h2 { font-size:17px; margin:22px 0 6px; }
+    .pv p { margin:0 0 10px; } .pv ul { margin:0 0 10px; padding-left:20px; }
+    .pv .scroll { overflow-x:auto; } .pv table { border-collapse:collapse; width:100%; font-size:14px; }
+    .pv td { border-bottom:1px solid var(--line); padding:8px 6px; vertical-align:top; } .pv td:first-child { font-weight:600; width:40%; }
+    .serp { border:1px dashed var(--line); border-radius:10px; padding:10px 12px; margin-bottom:16px; background:#fafaf8; }
+    .serp .st { color:#1a0dab; font-size:17px; line-height:1.3; } .serp .su { color:#15803d; font-size:12px; margin:2px 0; } .serp .sd { color:#4b4b4b; font-size:13px; }
+    #toast { position:fixed; left:50%; bottom:90px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:12px 18px; border-radius:999px; font-size:14px; z-index:40; max-width:90vw; text-align:center; }
+    #toast.bad { background:var(--bad); } #toast[hidden] { display:none; }
+    @media (max-width:640px) { main { padding:12px; } #list-all, #list-prices { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -66,22 +129,73 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     </form>
   ) : (
     <>
-      <header>
-        <h1>Products</h1>
-        <form method="post" action="/api/admin/logout"><button type="submit">Sign out</button></form>
-      </header>
+      <div class="top">
+        <header>
+          <h1>Products</h1>
+          <form method="post" action="/api/admin/logout"><button type="submit">Sign out</button></form>
+        </header>
+        <nav class="tabs" id="tabs">
+          <button type="button" data-view="all" class="on">All products</button>
+          <button type="button" data-view="review">Review SEO <span class="pill" id="nReview"></span></button>
+          <button type="button" data-view="prices">Add prices <span class="pill" id="nPrices"></span></button>
+        </nav>
+      </div>
       <main>
         <div id="note"></div>
-        <div class="bar"><input id="q" type="search" placeholder="Search products by name…" /></div>
-        <div id="count" class="count">Loading…</div>
-        <div id="list"></div>
-        <div class="more"><button id="more" hidden>Show more</button></div>
+
+        <section id="v-all">
+          <div class="bar"><input id="q-all" type="search" placeholder="Search products by name…" /></div>
+          <div id="count-all" class="count">Loading…</div>
+          <p class="topnote">Changing a name here changes it on the website. The link (slug) stays the same.</p>
+          <div id="list-all"></div>
+          <div class="more"><button id="more-all" hidden>Show more</button></div>
+        </section>
+
+        <section id="v-review" hidden>
+          <div id="reviewNote"></div>
+          <div class="seg">
+            <button type="button" id="seg-pending" class="on">Needs review</button>
+            <button type="button" id="seg-approved">Approved</button>
+          </div>
+          <div class="bar"><input id="q-review" type="search" placeholder="Search products by name…" /></div>
+          <div id="count-review" class="count"></div>
+          <div id="list-review"></div>
+          <div class="more"><button id="more-review" hidden>Show more</button></div>
+        </section>
+
+        <section id="v-prices" hidden>
+          <div class="bar"><input id="q-prices" type="search" placeholder="Search products without a price…" /></div>
+          <div id="count-prices" class="count"></div>
+          <p class="topnote">Changing a name here changes it on the website. The link (slug) stays the same.</p>
+          <div id="list-prices"></div>
+          <div class="more"><button id="more-prices" hidden>Show more</button></div>
+        </section>
+
         <input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden />
       </main>
+
+      <div id="ed" class="ed" hidden>
+        <div class="edtop">
+          <div class="edhead">
+            <button type="button" id="edBack">‹ Back</button>
+            <div class="t" id="edTitle"></div>
+            <a id="edLive" target="_blank" rel="noopener">Live page ↗</a>
+          </div>
+          <div class="edtabs">
+            <button type="button" id="mode-edit" class="on">Edit</button>
+            <button type="button" id="mode-preview">Preview</button>
+          </div>
+        </div>
+        <div class="edbody" id="edBody"></div>
+        <div class="edbar" id="edBar"></div>
+      </div>
+      <div id="toast" hidden></div>
       <script is:inline>
         (function () {
           var H = { 'x-requested-with': 'kna-admin' };
-          var PAGE = 20, all = [], shown = PAGE, query = '', pickFor = null;
+          var PAGE = 20;
+          var all = [], hasApproval = true, hasSeoContent = true, pickFor = null, view = 'all';
+          var st = { all: { q: '', shown: PAGE }, review: { q: '', shown: PAGE, tab: 'pending' }, prices: { q: '', shown: PAGE } };
           var $ = function (id) { return document.getElementById(id); };
 
           function api(url, opts) {
@@ -93,76 +207,117 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
             });
           }
 
-          function filtered() {
-            var q = query.trim().toLowerCase();
-            return q ? all.filter(function (p) { return (p.name || '').toLowerCase().indexOf(q) !== -1; }) : all;
-          }
-
-          function render() {
-            var items = filtered(), list = $('list');
-            list.textContent = '';
-            items.slice(0, shown).forEach(function (p) { list.appendChild(row(p)); });
-            $('count').textContent = items.length + ' product' + (items.length === 1 ? '' : 's');
-            $('more').hidden = items.length <= shown;
-          }
-
-          function setStatus(el, text, ok) { el.textContent = text; el.className = 'status ' + (ok ? 'ok' : 'bad'); }
-
-          function grow(t) { t.style.height = 'auto'; t.style.height = Math.max(84, t.scrollHeight + 2) + 'px'; }
-
+          function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+          function setStatus(e, text, ok) { e.textContent = text; e.className = 'status ' + (ok ? 'ok' : 'bad'); }
+          function grow(t) { t.style.height = 'auto'; t.style.height = Math.max(t.classList.contains('name') ? 60 : 84, t.scrollHeight + 2) + 'px'; }
           function field(labelText, input) {
             var w = document.createElement('div');
             var l = document.createElement('label'); l.className = 'lbl'; l.textContent = labelText;
             w.appendChild(l); w.appendChild(input); return w;
           }
+          function bg(node, url) { node.style.backgroundImage = url ? 'url("' + String(url).replace(/"/g, '%22') + '")' : ''; }
+          function hasPrice(p) { var n = Number(p.price); return p.price != null && p.price !== '' && isFinite(n) && n > 0; }
+          function byName(q) { q = q.trim().toLowerCase(); return function (p) { return !q || (p.name || '').toLowerCase().indexOf(q) !== -1; }; }
+          // 45000 -> 45,000 (keeps up to 2 decimals)
+          function fmtMoney(v) {
+            var raw = String(v == null ? '' : v).replace(/[^0-9.]/g, '');
+            var parts = raw.split('.'), whole = parts[0].replace(/^0+(?=\d)/, '');
+            var out = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            if (parts.length > 1) out += '.' + parts.slice(1).join('').slice(0, 2);
+            return out;
+          }
+          function unMoney(v) { return String(v || '').replace(/^\s*(ksh|kes)\.?/i, '').replace(/[,\s]/g, ''); }
+          function moneyOf(p) { return p.price == null || p.price === '' ? '' : fmtMoney(Number(p.price)); }
+          function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+          function toast(msg, bad) {
+            var t = $('toast'); t.textContent = msg; t.className = bad ? 'bad' : ''; t.hidden = false;
+            clearTimeout(toast.t); toast.t = setTimeout(function () { t.hidden = true; }, bad ? 4500 : 2200);
+          }
 
-          function row(p) {
-            var r = document.createElement('div'); r.className = 'card';
+          // ---------- the product card (used by All products and Add prices) ----------
+          function row(p, opts) {
+            opts = opts || {};
+            var r = document.createElement('div'); r.className = 'card' + (opts.compact ? ' compact' : '');
 
             var th = document.createElement('div'); th.className = 'thumb'; th.title = 'Tap to change the photo';
-            function paint() {
-              th.style.backgroundImage = p.image_url ? 'url("' + String(p.image_url).replace(/"/g, '%22') + '")' : '';
-              empty.style.display = p.image_url ? 'none' : 'flex';
-            }
-            var empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No photo yet';
-            var lbl = document.createElement('div'); lbl.className = 'chg'; lbl.textContent = 'Tap to change photo';
-            th.appendChild(empty); th.appendChild(lbl); paint();
-            th.onclick = function () { pickFor = { p: p, paint: paint, st: st }; $('file').value = ''; $('file').click(); };
+            var empty = el('div', 'empty', 'No photo yet');
+            function paint() { bg(th, p.image_url); empty.style.display = p.image_url ? 'none' : 'flex'; }
+            th.appendChild(empty); th.appendChild(el('div', 'chg', 'Tap to change photo')); paint();
+            if (p.seo_done) th.appendChild(el('div', 'seo-badge', 'SEO DONE'));
+            th.onclick = function () { pickFor = { p: p, paint: paint, st: stEl }; $('file').value = ''; $('file').click(); };
 
             var name = document.createElement('textarea'); name.className = 'name'; name.value = p.name || ''; name.maxLength = 120; name.rows = 2;
             name.oninput = function () { grow(name); };
             name.onkeydown = function (e) { if (e.key === 'Enter') e.preventDefault(); };
 
             var price = document.createElement('input'); price.type = 'text'; price.inputMode = 'decimal'; price.className = 'price';
-            price.value = p.price == null ? '' : String(p.price); price.placeholder = 'e.g. 45000';
+            price.value = hasPrice(p) ? moneyOf(p) : (opts.compact ? '' : moneyOf(p)); price.placeholder = 'e.g. 45,000';
+            var phint = el('div', 'phint');
+            function hint() { phint.textContent = price.value.trim() ? 'Shows as KSh ' + price.value.trim() : 'No price yet'; }
+            // add the thousands commas as the owner types, keeping the cursor in place
+            price.oninput = function () {
+              var digitsBefore = price.value.slice(0, price.selectionStart || 0).replace(/[^0-9.]/g, '').length;
+              price.value = fmtMoney(price.value);
+              var pos = 0, seen = 0;
+              while (pos < price.value.length && seen < digitsBefore) { if (/[0-9.]/.test(price.value[pos])) seen++; pos++; }
+              try { price.setSelectionRange(pos, pos); } catch (e) {}
+              hint();
+            };
+            hint();
 
-            var meta = document.createElement('div'); meta.className = 'meta';
-            meta.textContent = [p.major_category, p.sub_category].filter(Boolean).join(' · ');
+            var meta = el('div', 'meta', [p.major_category, p.sub_category].filter(Boolean).join(' · '));
 
-            var btn = document.createElement('button'); btn.className = 'primary'; btn.textContent = 'Save';
-            var st = document.createElement('div'); st.className = 'status';
-            var foot = document.createElement('div'); foot.className = 'foot'; foot.appendChild(st); foot.appendChild(btn);
+            var btn = el('button', 'primary', 'Save');
+            var stEl = el('div', 'status');
+            var acts = el('div', 'acts');
+            if (p.seo_done && p.slug) {
+              var live = el('a', 'live', 'View live ↗'); live.href = 'https://kitchenandall.co.ke/product/' + encodeURIComponent(p.slug);
+              live.target = '_blank'; live.rel = 'noopener'; live.title = 'Open this product on the live website';
+              acts.appendChild(live);
+            }
+            acts.appendChild(btn);
+            var foot = el('div', 'foot'); foot.appendChild(stEl); foot.appendChild(acts);
 
-            btn.onclick = function () {
+            function save() {
               var body = {};
               if (name.value !== (p.name || '')) body.name = name.value;
-              if (price.value.trim() !== (p.price == null ? '' : String(p.price))) body.price = price.value;
-              if (!Object.keys(body).length) { setStatus(st, 'Nothing changed', true); return; }
-              btn.disabled = true; setStatus(st, 'Saving…', true);
+              var priceNow = unMoney(price.value), priceWas = p.price == null || p.price === '' ? '' : String(Number(p.price));
+              if (priceNow !== priceWas && !(priceNow !== '' && priceWas !== '' && Number(priceNow) === Number(priceWas))) body.price = priceNow;
+              if (opts.compact) {
+                var n = Number(unMoney(price.value));
+                if (!price.value.trim() || !isFinite(n) || n <= 0) { setStatus(stEl, 'Enter a price above 0', false); price.focus(); return; }
+              }
+              if (!Object.keys(body).length) { setStatus(stEl, 'Nothing changed', true); return; }
+              btn.disabled = true; setStatus(stEl, 'Saving…', true);
               api('/api/admin/products/' + p.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
                 .then(function (b) {
                   Object.assign(p, b.product);
-                  name.value = p.name || ''; price.value = p.price == null ? '' : String(p.price); grow(name);
-                  setStatus(st, 'Saved ✓', true);
+                  name.value = p.name || ''; price.value = moneyOf(p); hint(); grow(name);
+                  setStatus(stEl, 'Saved ✓', true);
+                  counts();
+                  if (opts.compact && hasPrice(p)) {
+                    setTimeout(function () {
+                      r.classList.add('gone');
+                      setTimeout(function () {
+                        var nextCard = r.nextElementSibling;
+                        r.remove(); renderPricesCount();
+                        var nx = nextCard && nextCard.querySelector('input.price');
+                        if (nx) { nx.focus(); nx.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
+                        else if (view === 'prices') renderPrices();
+                      }, 300);
+                    }, 600);
+                  }
                 })
-                .catch(function (e) { setStatus(st, e.message, false); })
+                .catch(function (e) { setStatus(stEl, e.message, false); })
                 .then(function () { btn.disabled = false; });
-            };
+            }
+            btn.onclick = save;
+            price.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); save(); } };
 
-            var f = document.createElement('div'); f.className = 'fields';
+            var f = el('div', 'fields');
             f.appendChild(meta);
-            f.appendChild(field('Product name', name));
-            f.appendChild(field('Price in KSh (excl. VAT)', price));
+            var pw = field('Price in KSh', price); pw.appendChild(phint);
+            f.appendChild(field('Product name', name)); f.appendChild(pw);
             f.appendChild(foot);
 
             r.appendChild(th); r.appendChild(f);
@@ -170,6 +325,297 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
             return r;
           }
 
+          // ---------- All products ----------
+          function renderAll() {
+            var items = all.filter(byName(st.all.q)), list = $('list-all');
+            list.textContent = '';
+            items.slice(0, st.all.shown).forEach(function (p) { list.appendChild(row(p)); });
+            $('count-all').textContent = plural(items.length, 'product', 'products');
+            $('more-all').hidden = items.length <= st.all.shown;
+          }
+
+          // ---------- Add prices ----------
+          function priceItems() { return all.filter(function (p) { return !hasPrice(p); }).filter(byName(st.prices.q)); }
+          function renderPricesCount() {
+            var n = priceItems().length;
+            $('count-prices').textContent = n ? plural(n, 'product', 'products') + ' without a price' : '';
+          }
+          function renderPrices() {
+            var items = priceItems(), list = $('list-prices');
+            list.textContent = '';
+            items.slice(0, st.prices.shown).forEach(function (p) { list.appendChild(row(p, { compact: true })); });
+            renderPricesCount();
+            if (!items.length) list.appendChild(el('div', 'empty-state', st.prices.q.trim() ? 'No matches.' : 'Every product has a price. 🎉'));
+            $('more-prices').hidden = items.length <= st.prices.shown;
+          }
+
+          // ---------- Review SEO ----------
+          function reviewItems() {
+            var wantApproved = st.review.tab === 'approved', match = byName(st.review.q);
+            return all.filter(function (p) { return p.seo_done && !!p.seo_approved === wantApproved && match(p); });
+          }
+          function renderReview() {
+            var pending = all.filter(function (p) { return p.seo_done && !p.seo_approved; }).length;
+            var approved = all.filter(function (p) { return p.seo_done && p.seo_approved; }).length;
+            $('seg-pending').textContent = 'Needs review (' + pending + ')';
+            $('seg-approved').textContent = 'Approved (' + approved + ')';
+            $('seg-pending').className = st.review.tab === 'pending' ? 'on' : '';
+            $('seg-approved').className = st.review.tab === 'approved' ? 'on' : '';
+            var note = $('reviewNote'); note.textContent = '';
+            if (!hasSeoContent) note.appendChild(el('div', 'info', 'Could not find the SEO content in the database, so no products are listed here yet.'));
+            else if (!hasApproval) note.appendChild(el('div', 'info', 'Approval is not switched on yet. Run supabase-seo-approval.sql in Supabase, then reload this page. You can still read and edit the SEO below.'));
+            var items = reviewItems(), list = $('list-review');
+            list.textContent = '';
+            items.slice(0, st.review.shown).forEach(function (p) {
+              var r = el('div', 'rrow');
+              var th = el('div', 'rth'); bg(th, p.image_url);
+              var main = el('div', 'rmain');
+              main.appendChild(el('div', 'rname', p.name || ''));
+              main.appendChild(el('div', 'rsub', [p.major_category, p.sub_category].filter(Boolean).join(' · ')));
+              r.appendChild(th); r.appendChild(main); r.appendChild(el('div', 'chev', '›'));
+              r.onclick = function () { openEditor(p); };
+              list.appendChild(r);
+            });
+            $('count-review').textContent = items.length ? plural(items.length, 'product', 'products') : '';
+            if (!items.length) list.appendChild(el('div', 'empty-state', st.review.q.trim() ? 'No matches.' : (st.review.tab === 'pending' ? 'Nothing waiting for review. 🎉' : 'Nothing approved yet.')));
+            $('more-review').hidden = items.length <= st.review.shown;
+          }
+
+          function counts() {
+            var n = all.filter(function (p) { return p.seo_done && !p.seo_approved; }).length;
+            var m = all.filter(function (p) { return !hasPrice(p); }).length;
+            $('nReview').textContent = hasApproval && n ? n : '';
+            $('nPrices').textContent = m || '';
+          }
+
+          function show(v) {
+            if (E && !closeEditor()) return;
+            view = v;
+            ['all', 'review', 'prices'].forEach(function (k) {
+              $('v-' + k).hidden = k !== v;
+              $('tabs').querySelector('[data-view="' + k + '"]').className = k === v ? 'on' : '';
+            });
+            try { history.replaceState(null, '', v === 'all' ? location.pathname : '#' + v); } catch (e) {}
+            if (v === 'all') renderAll(); else if (v === 'review') renderReview(); else renderPrices();
+          }
+
+          // ---------- the SEO editor ----------
+          var E = null; // { p, d, hasMeta, hasApproval, dirty, mode, open }
+
+          function openEditor(p) {
+            if (E && E.dirty && !confirm('Discard your unsaved changes?')) return;
+            E = { p: p, d: null, dirty: false, mode: 'preview', open: {}, hasMeta: false, hasApproval: hasApproval };
+            $('ed').hidden = false; document.body.style.overflow = 'hidden';
+            $('edTitle').textContent = p.name || 'Product';
+            $('edLive').href = 'https://kitchenandall.co.ke/product/' + encodeURIComponent(p.slug || '');
+            $('edBody').textContent = 'Loading…';
+            setModeButtons(); updateBar();
+            api('/api/admin/products/' + p.id + '/seo').then(function (b) {
+              if (!E || E.p !== p) return;
+              var s = b.seo;
+              E.hasMeta = !!s.hasMeta; E.hasApproval = !!s.hasApproval;
+              E.d = {
+                meta_title: s.meta_title || '', meta_description: s.meta_description || '', intro: s.intro || '',
+                features: (s.key_features || []).map(function (t) { return { t: t }; }),
+                sections: (s.sections || []).map(function (x) { return { heading: x.heading || '', body: x.body || '' }; }),
+                specs: (s.specs || []).map(function (x) { return { label: x.label, value: x.value }; }),
+                faqs: (s.faqs || []).map(function (x) { return { q: x.q, a: x.a }; })
+              };
+              renderEditor(); updateBar();
+            }).catch(function (e) {
+              if (!E || E.p !== p) return;
+              $('edBody').textContent = ''; $('edBody').appendChild(el('div', 'msg', e.message));
+            });
+          }
+
+          // Returns true when the editor was closed.
+          function closeEditor(force) {
+            if (E && E.dirty && !force && !confirm('Discard your unsaved changes?')) return false;
+            E = null; $('ed').hidden = true; document.body.style.overflow = '';
+            if (view === 'review') renderReview();
+            counts();
+            return true;
+          }
+
+          function setModeButtons() {
+            $('mode-edit').className = E && E.mode === 'edit' ? 'on' : '';
+            $('mode-preview').className = E && E.mode === 'preview' ? 'on' : '';
+          }
+
+          function renderEditor() {
+            if (!E || !E.d) return;
+            var body = $('edBody'), top = body.scrollTop;
+            body.textContent = '';
+            var inner = el('div', 'edin');
+            var status = el('div', 'meta');
+            var tag = el('span', 'tag ' + (E.p.seo_approved ? 'ok' : 'wait'), E.p.seo_approved ? 'Approved' : 'Needs review');
+            status.appendChild(tag);
+            inner.appendChild(status);
+            inner.appendChild(E.mode === 'preview' ? previewNode() : formNode());
+            body.appendChild(inner);
+            body.scrollTop = top;
+          }
+
+          function updateBar() {
+            var bar = $('edBar'); bar.textContent = '';
+            if (!E || !E.d) return;
+            var save = el('button', '', E.dirty ? 'Save changes' : 'Saved');
+            save.disabled = !E.dirty; save.onclick = function () { commit({}); };
+            bar.appendChild(save);
+            if (!E.p.seo_approved) {
+              var ap = el('button', 'primary', 'Approve ✓'); ap.disabled = !E.hasApproval;
+              ap.onclick = function () { commit({ approved: true }); };
+              bar.appendChild(ap);
+            } else {
+              var back = el('button', '', 'Move back to review');
+              back.onclick = function () { commit({ approved: false }); };
+              bar.appendChild(back);
+            }
+          }
+
+          function commit(extra) {
+            if (!E || !E.d) return;
+            var d = E.d, p = E.p, body = {};
+            if (E.dirty) {
+              body.content = {
+                intro: d.intro,
+                key_features: d.features.map(function (f) { return f.t; }),
+                sections: d.sections, specs: d.specs, faqs: d.faqs
+              };
+              if (E.hasMeta) { body.meta_title = d.meta_title; body.meta_description = d.meta_description; }
+            }
+            if (extra.approved !== undefined) body.approved = extra.approved;
+            var queue = reviewItems(), idx = queue.indexOf(p);
+            Array.prototype.forEach.call($('edBar').querySelectorAll('button'), function (b) { b.disabled = true; });
+            api('/api/admin/products/' + p.id + '/seo', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+              .then(function (b) {
+                Object.assign(p, b.product);
+                E.dirty = false; counts();
+                if (extra.approved === true) {
+                  var next = reviewItems()[Math.max(idx, 0)];
+                  if (next && st.review.tab === 'pending') { toast('Approved ✓'); openEditor(next); }
+                  else { closeEditor(true); toast('Approved ✓ Nothing left to review'); }
+                } else if (extra.approved === false) {
+                  closeEditor(true); toast('Moved back to review');
+                } else {
+                  toast('Saved ✓'); renderEditor(); updateBar();
+                }
+              })
+              .catch(function (e) { toast(e.message, true); updateBar(); });
+          }
+
+          function mark() { if (E && !E.dirty) { E.dirty = true; updateBar(); } }
+
+          function input(val, onch, ph, max) {
+            var i = document.createElement('input'); i.type = 'text'; i.value = val || ''; if (ph) i.placeholder = ph; if (max) i.maxLength = max;
+            i.oninput = function () { onch(i.value); mark(); }; return i;
+          }
+          function area(val, onch, rows) {
+            var t = document.createElement('textarea'); t.className = 'ta'; t.value = val || ''; if (rows) t.rows = rows;
+            t.oninput = function () { onch(t.value); mark(); }; return t;
+          }
+          function smBtn(label, fn, cls) { var b = el('button', 'sm' + (cls ? ' ' + cls : ''), label); b.type = 'button'; b.onclick = fn; return b; }
+
+          function grp(key, title, defOpen, build) {
+            var det = document.createElement('details'); det.className = 'grp';
+            det.open = E.open[key] !== undefined ? E.open[key] : defOpen;
+            det.ontoggle = function () { E.open[key] = det.open; };
+            det.appendChild(el('summary', '', title));
+            var inn = el('div', 'in'); build(inn); det.appendChild(inn);
+            return det;
+          }
+
+          function listGroup(key, title, arr, blank, build, addLabel) {
+            return grp(key, title + ' (' + arr.length + ')', false, function (inn) {
+              arr.forEach(function (it, i) {
+                var box = el('div', 'item'); build(box, it);
+                var ctl = el('div', 'irow');
+                if (i > 0) ctl.appendChild(smBtn('↑', function () { var t = arr[i]; arr[i] = arr[i - 1]; arr[i - 1] = t; mark(); renderEditor(); }));
+                if (i < arr.length - 1) ctl.appendChild(smBtn('↓', function () { var t = arr[i]; arr[i] = arr[i + 1]; arr[i + 1] = t; mark(); renderEditor(); }));
+                ctl.appendChild(smBtn('Remove', function () { if (confirm('Remove this?')) { arr.splice(i, 1); mark(); renderEditor(); } }));
+                box.appendChild(ctl); inn.appendChild(box);
+              });
+              inn.appendChild(smBtn(addLabel, function () { arr.push(blank()); E.open[key] = true; mark(); renderEditor(); }, 'add'));
+            });
+          }
+
+          function counter(node, max) {
+            var h = el('div', 'hint'); function up() { h.textContent = node.value.length + ' / about ' + max + ' characters'; }
+            node.addEventListener('input', up); up(); return h;
+          }
+
+          function formNode() {
+            var d = E.d, w = el('div');
+            if (E.hasMeta) {
+              w.appendChild(grp('meta', 'Google listing', true, function (inn) {
+                var t = input(d.meta_title, function (v) { d.meta_title = v; }, 'Title shown on Google', 120);
+                var a = area(d.meta_description, function (v) { d.meta_description = v; }, 3);
+                var tw = el('div'); tw.appendChild(el('label', 'lbl', 'Google title')); tw.appendChild(t); tw.appendChild(counter(t, 60));
+                var aw = el('div'); aw.appendChild(el('label', 'lbl', 'Google description')); aw.appendChild(a); aw.appendChild(counter(a, 155));
+                inn.appendChild(tw); inn.appendChild(aw);
+              }));
+            }
+            w.appendChild(grp('intro', 'Introduction', true, function (inn) { inn.appendChild(area(d.intro, function (v) { d.intro = v; }, 6)); }));
+            w.appendChild(listGroup('features', 'Key features', d.features, function () { return { t: '' }; }, function (box, f) {
+              box.appendChild(input(f.t, function (v) { f.t = v; }, 'Feature', 300));
+            }, '+ Add feature'));
+            w.appendChild(listGroup('sections', 'Sections', d.sections, function () { return { heading: '', body: '' }; }, function (box, s) {
+              box.appendChild(input(s.heading, function (v) { s.heading = v; }, 'Heading', 150));
+              box.appendChild(area(s.body, function (v) { s.body = v; }, 6));
+            }, '+ Add section'));
+            w.appendChild(listGroup('specs', 'Specifications', d.specs, function () { return { label: '', value: '' }; }, function (box, s) {
+              box.appendChild(input(s.label, function (v) { s.label = v; }, 'Name, e.g. Power', 80));
+              box.appendChild(input(s.value, function (v) { s.value = v; }, 'Value, e.g. 3 kW', 300));
+            }, '+ Add specification'));
+            w.appendChild(listGroup('faqs', 'FAQs', d.faqs, function () { return { q: '', a: '' }; }, function (box, f) {
+              box.appendChild(input(f.q, function (v) { f.q = v; }, 'Question', 300));
+              box.appendChild(area(f.a, function (v) { f.a = v; }, 4));
+            }, '+ Add question'));
+            w.appendChild(el('div', 'hint', 'Tip: start a line with "- " in a section to make a bullet list.'));
+            return w;
+          }
+
+          function blocks(host, text) {
+            var ul = null;
+            String(text || '').split(/\n+/).map(function (l) { return l.trim(); }).filter(Boolean).forEach(function (line) {
+              var m = line.match(/^[-\u2022*]\s+(.*)/);
+              if (m) { if (!ul) { ul = el('ul'); host.appendChild(ul); } ul.appendChild(el('li', '', m[1])); }
+              else { ul = null; host.appendChild(el('p', '', line)); }
+            });
+          }
+
+          // What the visitor will see, built from the edits on screen (saved or not).
+          function previewNode() {
+            var d = E.d, p = E.p, pv = el('div', 'pv');
+            if (E.hasMeta && (d.meta_title || d.meta_description)) {
+              var s = el('div', 'serp');
+              s.appendChild(el('div', 'st', d.meta_title || p.name || ''));
+              s.appendChild(el('div', 'su', 'kitchenandall.co.ke › product › ' + (p.slug || '')));
+              s.appendChild(el('div', 'sd', d.meta_description || ''));
+              pv.appendChild(s);
+            }
+            if (p.image_url) { var im = document.createElement('img'); im.src = p.image_url; im.alt = ''; pv.appendChild(im); }
+            pv.appendChild(el('h1', '', p.name || ''));
+            blocks(pv, d.intro);
+            var feats = d.features.filter(function (f) { return f.t.trim(); });
+            if (feats.length) { pv.appendChild(el('h2', '', 'Key features')); var ul = el('ul'); feats.forEach(function (f) { ul.appendChild(el('li', '', f.t)); }); pv.appendChild(ul); }
+            d.sections.forEach(function (s) { if (s.heading.trim()) pv.appendChild(el('h2', '', s.heading)); blocks(pv, s.body); });
+            var specs = d.specs.filter(function (x) { return x.label.trim() && x.value.trim(); });
+            if (specs.length) {
+              pv.appendChild(el('h2', '', 'Specifications'));
+              var sc = el('div', 'scroll'), tb = el('table');
+              specs.forEach(function (x) { var tr = el('tr'); tr.appendChild(el('td', '', x.label)); tr.appendChild(el('td', '', x.value)); tb.appendChild(tr); });
+              sc.appendChild(tb); pv.appendChild(sc);
+            }
+            var faqs = d.faqs.filter(function (x) { return x.q.trim() && x.a.trim(); });
+            if (faqs.length) {
+              pv.appendChild(el('h2', '', 'Frequently asked questions'));
+              faqs.forEach(function (x) { pv.appendChild(el('p', '', x.q)).style.fontWeight = '700'; blocks(pv, x.a); });
+            }
+            return pv;
+          }
+
+          // ---------- photo upload ----------
           // Shrink the photo in the browser first so phone photos upload fast and stay under the 6 MB limit.
           function resize(file) {
             return new Promise(function (resolve, reject) {
@@ -200,12 +646,27 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
             }).catch(function (e) { setStatus(t.st, e.message, false); });
           };
 
-          $('q').oninput = function () { query = this.value; shown = PAGE; render(); };
-          $('more').onclick = function () { shown += PAGE; render(); };
+          // ---------- wiring ----------
+          Array.prototype.forEach.call($('tabs').querySelectorAll('button'), function (b) { b.onclick = function () { show(b.getAttribute('data-view')); }; });
+          $('q-all').oninput = function () { st.all.q = this.value; st.all.shown = PAGE; renderAll(); };
+          $('q-prices').oninput = function () { st.prices.q = this.value; st.prices.shown = PAGE; renderPrices(); };
+          $('q-review').oninput = function () { st.review.q = this.value; st.review.shown = PAGE; renderReview(); };
+          $('more-all').onclick = function () { st.all.shown += PAGE; renderAll(); };
+          $('more-prices').onclick = function () { st.prices.shown += PAGE; renderPrices(); };
+          $('more-review').onclick = function () { st.review.shown += PAGE; renderReview(); };
+          $('seg-pending').onclick = function () { st.review.tab = 'pending'; st.review.shown = PAGE; renderReview(); };
+          $('seg-approved').onclick = function () { st.review.tab = 'approved'; st.review.shown = PAGE; renderReview(); };
+          $('edBack').onclick = function () { closeEditor(); };
+          $('mode-edit').onclick = function () { if (E) { E.mode = 'edit'; setModeButtons(); renderEditor(); } };
+          $('mode-preview').onclick = function () { if (E) { E.mode = 'preview'; setModeButtons(); renderEditor(); } };
 
           api('/api/admin/products').then(function (b) {
-            all = b.products || []; render();
-          }).catch(function (e) { $('count').textContent = ''; $('note').innerHTML = ''; var d = document.createElement('div'); d.className = 'msg'; d.textContent = e.message; $('note').appendChild(d); });
+            all = b.products || [];
+            hasApproval = b.hasApproval !== false; hasSeoContent = b.hasSeoContent !== false;
+            counts();
+            var h = location.hash.replace('#', '');
+            show(h === 'review' || h === 'prices' ? h : 'all');
+          }).catch(function (e) { $('count-all').textContent = ''; var d = el('div', 'msg', e.message); $('note').appendChild(d); });
         })();
       </script>
     </>

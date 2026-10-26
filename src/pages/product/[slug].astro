@@ -6,6 +6,8 @@ import { supabase } from '../../lib/supabase';
 import ProductDetail from '../../components/ProductDetail';
 import ProductCard from '../../components/productCard';
 import { parseContent } from '../../lib/productContent';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { categoryOf, categoryUrl, subCategoryUrl } from '../../lib/categories';
 
 const { slug } = Astro.params;
 
@@ -14,6 +16,17 @@ const { data: product, error } = await supabase
   .select('*')
   .eq('slug', slug)
   .single();
+
+// A product whose link was renamed keeps its old slugs in old_slugs: send visitors and Google to the new link
+if (!product && slug) {
+  const { data: moved } = await supabase
+    .from('products')
+    .select('slug')
+    .contains('old_slugs', [slug])
+    .limit(1)
+    .maybeSingle();
+  if (moved?.slug) return Astro.redirect(`/product/${moved.slug}`, 301);
+}
 
 // Fetch related products from the same category
 let relatedProducts = [];
@@ -28,7 +41,17 @@ if (product) {
   relatedProducts = related || [];
 }
 
-const siteUrl = 'https://kitchenandall.co.ke'; // swap once you have the real domain
+const siteUrl = 'https://kitchenandall.co.ke';
+
+// Home / Category / Sub-category / Product
+const { category, sub } = product ? categoryOf(product) : { category: undefined, sub: undefined };
+const crumbs = product
+  ? [
+      ...(category ? [{ name: category.name, href: categoryUrl(category) }] : [{ name: 'All Products', href: '/catalog' }]),
+      ...(category && sub ? [{ name: sub.name, href: subCategoryUrl(category, sub) }] : []),
+      { name: product.name },
+    ]
+  : []; // swap once you have the real domain
 
 const content = product ? parseContent(product) : null;
 const canonical = product ? (product.canonical_url || `${siteUrl}/product/${product.slug}`) : undefined;
@@ -68,17 +91,27 @@ const productJsonLd = product
     {product ? (
       <>
         <script is:inline type="application/ld+json" set:html={JSON.stringify(productJsonLd)} />
+        <div class="bg-slate-100">
+          <Breadcrumbs items={crumbs} class="mx-auto max-w-7xl px-4 pt-8 lg:pt-12" />
+        </div>
         <ProductDetail product={product} client:load />
 
         {/* You May Also Like Section */}
         {relatedProducts.length > 0 && (
           <section class="bg-white border-t border-slate-200 py-16">
             <div class="max-w-7xl mx-auto px-4">
-              <div class="mb-12">
-                <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tight">You May Also Like</h2>
-                <div class="h-1.5 w-20 bg-orange-600 mt-3"></div>
+              <div class="mb-12 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tight">You May Also Like</h2>
+                  <div class="h-1.5 w-20 bg-orange-600 mt-3"></div>
+                </div>
+                {category && (
+                  <a href={sub ? subCategoryUrl(category, sub) : categoryUrl(category)} class="text-orange-600 font-black uppercase text-sm tracking-widest hover:underline">
+                    All {(sub || category).name}
+                  </a>
+                )}
               </div>
-              <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-10">
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
                 {relatedProducts.map((relatedProduct) => (
                   <ProductCard product={relatedProduct} client:visible />
                 ))}

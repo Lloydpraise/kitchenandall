@@ -2,6 +2,8 @@
 import Layout from '../layouts/layout.astro';
 import ProductCard from '../components/productCard';
 import { supabase } from '../lib/supabase';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { categories, categoryUrl } from '../lib/categories';
 
 const { data: allProducts, error } = await supabase
   .from('products')
@@ -11,13 +13,19 @@ const { data: allProducts, error } = await supabase
 if (error) console.error('All products error:', error);
 ---
 
-<Layout title="Catalog - Kitchen And All" description="Browse our complete catalog of commercial kitchen equipment">
+<Layout title="All Commercial Kitchen Equipment | Kitchen And All Kenya" description="Browse every product from Kitchen And All: commercial kitchen equipment, stainless steel sinks, tables and custom fabrication, delivered across Kenya." canonicalUrl="https://kitchenandall.co.ke/catalog">
   <div class="min-h-screen bg-slate-50">
     <!-- Page Header -->
     <section class="bg-slate-900 text-white py-16">
       <div class="max-w-7xl mx-auto px-4">
+        <Breadcrumbs items={[{ name: 'All Products' }]} class="mb-6" dark />
         <h1 class="text-4xl lg:text-5xl font-black uppercase tracking-tighter mb-4">Complete Catalog</h1>
         <p class="text-slate-300 text-lg max-w-2xl">Browse our full selection of commercial kitchen equipment and solutions for hospitality and foodservice businesses in Kenya.</p>
+        <div class="mt-8 flex flex-wrap gap-2">
+          {categories.map((c) => (
+            <a href={categoryUrl(c)} class="rounded-full border border-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-200 hover:border-orange-500 hover:text-orange-400">{c.menuName}</a>
+          ))}
+        </div>
       </div>
     </section>
 
@@ -28,7 +36,7 @@ if (error) console.error('All products error:', error);
           <div class="mb-8">
             <p class="text-slate-600 text-sm font-semibold">Showing {allProducts.length} products</p>
           </div>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
             {allProducts.map((product) => (
               <ProductCard product={product} client:visible />
             ))}

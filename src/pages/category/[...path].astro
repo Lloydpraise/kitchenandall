@@ -1,0 +1,237 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ProductCard from '../../components/productCard';
+import { supabase } from '../../lib/supabase';
+import { categories, findCategory, categoryUrl, subCategoryUrl, legacyCategoryRedirects } from '../../lib/categories';
+
+const siteUrl = 'https://kitchenandall.co.ke';
+const parts = (Astro.params.path || '').split('/').filter(Boolean);
+
+// Old links such as /category/burners-jikos-stoves keep working
+if (parts.length === 1 && legacyCategoryRedirects[parts[0]]) {
+  return Astro.redirect(legacyCategoryRedirects[parts[0]], 301);
+}
+
+const category = parts.length ? findCategory(parts[0]) : undefined;
+const sub = category && parts[1] ? category.subs.find((s) => s.slug === parts[1]) : undefined;
+const isIndex = parts.length === 0;
+const notFound = !isIndex && (!category || parts.length > 2 || (parts.length === 2 && !sub));
+if (notFound) Astro.response.status = 404;
+
+// /category: every category with one product photo each
+let covers: Record<string, string> = {};
+let counts: Record<string, number> = {};
+let products: any[] = [];
+
+if (isIndex) {
+  const { data, error } = await supabase.from('products').select('major_category, sub_category, image_url').order('id');
+  if (error) console.error('Category index query error:', error);
+  for (const p of data || []) {
+    counts[p.major_category] = (counts[p.major_category] || 0) + 1;
+    if (p.image_url && !covers[p.major_category]) covers[p.major_category] = p.image_url;
+  }
+} else if (category && !notFound) {
+  let query = supabase.from('products').select('*').eq('major_category', category.name);
+  if (sub) query = query.eq('sub_category', sub.name);
+  const { data, error } = await query.order('id');
+  if (error) console.error('Category query error:', error);
+  products = data || [];
+  for (const p of products) {
+    counts[p.sub_category] = (counts[p.sub_category] || 0) + 1;
+    if (p.image_url && !covers[p.sub_category]) covers[p.sub_category] = p.image_url;
+  }
+}
+
+const page = sub || category;
+const url = isIndex ? '/category' : category && sub ? subCategoryUrl(category, sub) : category ? categoryUrl(category) : Astro.url.pathname;
+const title = isIndex
+  ? 'Shop Commercial Kitchen Equipment by Category | Kitchen And All'
+  : page ? page.title : 'Category not found';
+const description = isIndex
+  ? 'Browse every Kitchen And All category: cooking equipment, jikos, grills, food warmers, bakery, butchery, sinks, tables, hoods and custom stainless steel fabrication.'
+  : page?.description;
+
+const crumbs = isIndex
+  ? [{ name: 'Categories' }]
+  : category && sub
+    ? [{ name: category.name, href: categoryUrl(category) }, { name: sub.name }]
+    : category ? [{ name: category.name }] : [];
+
+// Price slider: from the cheapest to the dearest product in this page, rounded to a tidy step
+const prices = products.map((p) => Number(p.price)).filter((n) => Number.isFinite(n) && n > 0);
+const priceStep = Math.max(...prices, 0) > 200000 ? 1000 : 500;
+const priceMin = prices.length ? Math.floor(Math.min(...prices) / priceStep) * priceStep : 0;
+const priceMax = prices.length ? Math.ceil(Math.max(...prices) / priceStep) * priceStep : 0;
+const showPriceSlider = products.length > 1 && priceMax > priceMin;
+
+const itemListJsonLd = page && products.length
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: page.name,
+      itemListElement: products.slice(0, 50).map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `${siteUrl}/product/${p.slug}`, name: p.name })),
+    }
+  : null;
+---
+
+<Layout title={title} description={description} canonicalUrl={notFound ? undefined : `${siteUrl}${url}`} noindex={notFound || (!isIndex && products.length === 0)}>
+  <div class="bg-slate-50 min-h-[60vh]">
+    {notFound ? (
+      <div class="mx-auto flex min-h-[40vh] max-w-2xl items-center justify-center px-4 py-16 text-center">
+        <div>
+          <p class="text-sm uppercase tracking-[0.35em] text-orange-600 font-black">Category not found</p>
+          <h1 class="mt-6 text-2xl font-black text-slate-900">That category doesn't exist.</h1>
+          <a href="/category" class="mt-8 inline-flex rounded-full bg-orange-600 px-8 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-orange-700">See all categories</a>
+        </div>
+      </div>
+    ) : (
+      <>
+        <section class="bg-white border-b border-slate-200">
+          <div class="max-w-7xl mx-auto px-4 py-8 lg:py-12">
+            <Breadcrumbs items={crumbs} />
+            <h1 class="mt-5 text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight">
+              {isIndex ? 'Shop by Category' : page!.name}
+            </h1>
+            <div class="h-1.5 w-20 bg-orange-600 mt-3"></div>
+            <p class="mt-5 max-w-3xl text-slate-600 leading-relaxed">
+              {isIndex
+                ? 'Commercial kitchen equipment and stainless steel work for hotels, restaurants, schools, hospitals, bakeries and butcheries across Kenya. Pick a category to see every product in it.'
+                : page!.intro}
+            </p>
+            {!isIndex && (
+              <p class="mt-3 text-sm font-semibold text-slate-500">{products.length} product{products.length === 1 ? '' : 's'}</p>
+            )}
+
+            {category && (
+              <div data-scroll-active class="mt-6 -mx-4 px-4 flex gap-2 overflow-x-auto pb-2 lg:flex-wrap lg:overflow-visible" aria-label={`${category.name} sub-categories`}>
+                <a href={categoryUrl(category)} aria-current={!sub ? 'page' : undefined} class={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${!sub ? 'border-orange-600 bg-orange-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-orange-600 hover:text-orange-600'}`}>All {category.name}</a>
+                {category.subs.map((s) => (
+                  <a href={subCategoryUrl(category, s)} aria-current={sub?.slug === s.slug ? 'page' : undefined} class={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors ${sub?.slug === s.slug ? 'border-orange-600 bg-orange-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-orange-600 hover:text-orange-600'}`}>{s.name}</a>
+                ))}
+              </div>
+            )}
+
+            {showPriceSlider && (
+              <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5" data-price-filter data-min={priceMin} data-max={priceMax}>
+                <label for="price-max" class="text-[11px] font-black uppercase tracking-widest text-slate-500">Price up to</label>
+                <span data-price-value class="text-sm font-black text-slate-900 whitespace-nowrap">KSh {priceMax.toLocaleString()}</span>
+                <div class="flex min-w-[180px] flex-1 items-center gap-3">
+                  <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap">{priceMin.toLocaleString()}</span>
+                  <input id="price-max" data-price-input type="range" min={priceMin} max={priceMax} step={priceStep} value={priceMax} class="price-range h-6 w-full cursor-pointer" aria-label="Show products up to this price in Kenya shillings" />
+                  <span class="text-[11px] font-bold text-slate-400 whitespace-nowrap">{priceMax.toLocaleString()}</span>
+                </div>
+                <span data-price-count class="text-xs font-semibold text-slate-500 whitespace-nowrap">{products.length} of {products.length}</span>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {isIndex && (
+          <main class="max-w-7xl mx-auto px-4 py-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((c) => (
+              <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+                <a href={categoryUrl(c)} class="group relative block h-40 bg-slate-200">
+                  {covers[c.name] && <img src={covers[c.name]} alt={c.name} loading="lazy" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />}
+                  <div class="absolute inset-0 bg-slate-900/45 group-hover:bg-orange-600/70 transition-colors"></div>
+                  <h2 class="absolute inset-x-4 bottom-4 text-white text-lg font-black uppercase tracking-tight">{c.name}</h2>
+                </a>
+                <ul class="p-5 space-y-2 text-sm">
+                  {c.subs.map((s) => (
+                    <li><a href={subCategoryUrl(c, s)} class="text-slate-600 hover:text-orange-600 font-semibold">{s.name}</a></li>
+                  ))}
+                  <li class="pt-2"><a href={categoryUrl(c)} class="text-orange-600 font-black uppercase text-xs tracking-widest hover:underline">View all {counts[c.name] ? `${counts[c.name]} ` : ''}products</a></li>
+                </ul>
+              </div>
+            ))}
+          </main>
+        )}
+
+        {!isIndex && (
+          <main class="max-w-7xl mx-auto px-4 py-12">
+            {itemListJsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />}
+            {products.length > 0 ? (
+              <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
+                {products.map((product) => (
+                  <div data-product-price={Number(product.price)} class="min-w-0 [&[hidden]]:hidden">
+                    <ProductCard product={product} client:visible />
+                  </div>
+                ))}
+              </div>
+              <div data-price-empty hidden class="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center">
+                <p class="text-slate-600">No products at this price. Slide the price up to see more.</p>
+              </div>
+            ) : (
+              <div class="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+                <p class="text-slate-600">We are adding products here. Tell us what you need and we will quote or build it for you.</p>
+                <a href="/get-quote" class="mt-6 inline-flex rounded-full bg-orange-600 px-6 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-orange-700">Get a quote</a>
+              </div>
+            )}
+
+            {category && (
+              <div class="mt-16 rounded-2xl bg-slate-900 p-8 lg:p-10 text-slate-300">
+                <h2 class="text-white text-xl font-black uppercase tracking-tight">Why buy {page!.name.toLowerCase()} from Kitchen And All</h2>
+                <ul class="mt-5 grid gap-3 sm:grid-cols-2 text-sm leading-relaxed">
+                  <li>Heavy gauge, food grade stainless steel work from our own Nairobi workshop.</li>
+                  <li>Equipment that meets government and public health regulations.</li>
+                  <li>Guidance at every step, from choosing the right size to installation.</li>
+                  <li>Quick delivery: free within Nairobi, and we ship to the rest of Kenya.</li>
+                </ul>
+                <div class="mt-6 flex flex-wrap gap-3">
+                  <a href="/get-quote" class="inline-flex rounded-full bg-orange-600 px-6 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-orange-700">Get a quote</a>
+                  <a href="https://wa.me/254741045143" target="_blank" rel="noreferrer" class="inline-flex rounded-full border border-slate-600 px-6 py-3 text-xs font-black uppercase tracking-widest text-white hover:border-orange-500">WhatsApp us</a>
+                </div>
+              </div>
+            )}
+
+            {category && (
+              <nav class="mt-12" aria-label="Other categories">
+                <h2 class="text-sm font-black text-slate-900 uppercase tracking-widest">Other categories</h2>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  {categories.filter((c) => c.slug !== category.slug).map((c) => (
+                    <a href={categoryUrl(c)} class="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:border-orange-600 hover:text-orange-600">{c.name}</a>
+                  ))}
+                </div>
+              </nav>
+            )}
+          </main>
+        )}
+      </>
+    )}
+  </div>
+
+<style is:global>
+  .price-range { -webkit-appearance: none; appearance: none; background: transparent; }
+  .price-range::-webkit-slider-runnable-track { height: 6px; border-radius: 9999px; background: #e2e8f0; }
+  .price-range::-moz-range-track { height: 6px; border-radius: 9999px; background: #e2e8f0; }
+  .price-range::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; margin-top: -8px; border-radius: 9999px; background: #ea580c; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(15,23,42,.35); }
+  .price-range::-moz-range-thumb { height: 18px; width: 18px; border-radius: 9999px; background: #ea580c; border: 3px solid #fff; box-shadow: 0 1px 4px rgba(15,23,42,.35); }
+</style>
+<script is:inline>
+  (() => {
+    const box = document.querySelector('[data-price-filter]');
+    if (!box) return;
+    const input = box.querySelector('[data-price-input]');
+    const value = box.querySelector('[data-price-value]');
+    const count = box.querySelector('[data-price-count]');
+    const items = [...document.querySelectorAll('[data-product-price]')];
+    const empty = document.querySelector('[data-price-empty]');
+    const apply = () => {
+      const limit = Number(input.value);
+      let shown = 0;
+      items.forEach((el) => {
+        const show = Number(el.dataset.productPrice) <= limit;
+        el.hidden = !show;
+        if (show) shown++;
+      });
+      value.textContent = 'KSh ' + limit.toLocaleString('en-KE');
+      count.textContent = shown + ' of ' + items.length;
+      if (empty) empty.hidden = shown > 0;
+    };
+    input.addEventListener('input', apply);
+    apply();
+  })();
+</script>
+</Layout>

@@ -152,19 +152,13 @@ export default function ProductDetail({ product }: { product: Product }) {
   return (
     <div className="relative bg-slate-100 pb-32 lg:pb-0">
       {/* ───────── Top: image + buying panel ───────── */}
-      <div className="mx-auto max-w-7xl px-4 py-10 lg:py-16">
-        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500">
-          <a href="/" className="hover:text-orange-600">Home</a>
-          {product.major_category && (<><span aria-hidden="true">/</span><span>{product.major_category}</span></>)}
-          {product.sub_category && (<><span aria-hidden="true">/</span><span>{product.sub_category}</span></>)}
-        </nav>
-
+      <div className="mx-auto max-w-7xl px-4 pt-4 pb-10 lg:pt-6 lg:pb-16">
         <div className="grid min-w-0 gap-10 lg:grid-cols-[1.05fr_0.95fr] items-start">
           <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-[0_40px_120px_rgba(15,23,42,0.12)] lg:sticky lg:top-24">
             <img
               src={product.image_url}
               alt={product.name}
-              className="h-full min-h-[420px] w-full object-cover"
+              className="aspect-[4/3] w-full object-cover lg:aspect-[5/4]"
             />
             <div className="absolute inset-x-0 top-6 px-6 flex flex-wrap gap-3">
               <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.35em] ${isOutOfStock ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'}`}>
@@ -194,7 +188,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                       <span className="text-sm text-slate-500 line-through">KSH {Number(product.old_price).toLocaleString()}</span>
                     )}
                   </div>
-                  <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-400">Price excl. VAT (16%)</p>
                 </div>
                 <span className={`rounded-full px-4 py-2 text-sm font-black uppercase tracking-[0.25em] ${isOutOfStock ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'}`}>
                   {isOutOfStock ? 'Out of stock' : 'Available now'}
@@ -348,7 +341,6 @@ export default function ProductDetail({ product }: { product: Product }) {
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="truncate text-xl font-black leading-tight text-slate-900">KSH {Number(product.price).toLocaleString()}</p>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Price excl. VAT (16%)</p>
           </div>
           <button
             type="button"

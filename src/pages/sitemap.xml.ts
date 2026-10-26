@@ -1,21 +1,10 @@
 import type { APIRoute } from 'astro';
 import { supabase } from '../lib/supabase';
+import { categories, categoryUrl, subCategoryUrl } from '../lib/categories';
 
 export const prerender = false;
 
 const siteUrl = 'https://kitchenandall.co.ke';
-
-const majorCategories = ["Cooking", "Refrigeration", "Food Prep", "Stainless Steel"];
-const subCategories = [
-  "Bakery Appliances", "Burners Jikos Stoves", "Cooking Appliances", "Small Appliances",
-  "Large Appliances", "Hotel Appliances", "Office Kitchen",
-  "Butchery Equipment", "Food Processors", "Measuring Tools Scales",
-  "Home Kitchen", "Juakali Fabrications"
-];
-
-function slugify(str: string) {
-  return str.toLowerCase().replace(/[\s/]+/g, '-');
-}
 
 export const GET: APIRoute = async () => {
   const { data: products } = await supabase.from('products').select('slug');
@@ -24,8 +13,8 @@ export const GET: APIRoute = async () => {
     .select('slug')
     .eq('published', true);
 
-  const staticUrls = ['', 'blogs', 'get-quote', 'terms', 'privacy', 'shipping', 'returns'];
-  const categoryUrls = [...majorCategories, ...subCategories].map((c) => `category/${slugify(c)}`);
+  const staticUrls = ['', 'catalog', 'blogs', 'get-quote', 'terms', 'privacy', 'shipping', 'returns'];
+  const categoryUrls = ['/category', ...categories.flatMap((c) => [categoryUrl(c), ...c.subs.map((s) => subCategoryUrl(c, s))])].map((u) => u.slice(1));
   const productUrls = (products || []).map((p: any) => `product/${p.slug}`);
   const postUrls = (posts || []).map((p: any) => `blogs/${p.slug}`);
 

@@ -1,0 +1,33 @@
+---
+// Breadcrumb trail plus BreadcrumbList structured data for Google. The last item is the current page.
+interface Crumb { name: string; href?: string }
+interface Props { items: Crumb[]; class?: string; dark?: boolean }
+
+const { items, class: className = '', dark = false } = Astro.props;
+const siteUrl = 'https://kitchenandall.co.ke';
+const trail: Crumb[] = [{ name: 'Home', href: '/' }, ...items];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: trail.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.name,
+    ...(c.href || i === trail.length - 1 ? { item: `${siteUrl}${c.href ?? Astro.url.pathname}` } : {}),
+  })),
+};
+---
+<nav aria-label="Breadcrumb" class={`text-[11px] sm:text-xs font-bold uppercase tracking-widest ${dark ? 'text-slate-400' : 'text-slate-500'} ${className}`}>
+  <ol class="flex items-center gap-x-2 overflow-x-auto whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:gap-y-1 sm:whitespace-normal">
+    {trail.map((c, i) => (
+      <li class="flex shrink-0 items-center gap-2 sm:shrink">
+        {i > 0 && <span aria-hidden="true" class={dark ? 'text-slate-600' : 'text-slate-300'}>/</span>}
+        {i < trail.length - 1 && c.href
+          ? <a href={c.href} class={`${dark ? 'hover:text-orange-400' : 'hover:text-orange-600'} transition-colors`}>{c.name}</a>
+          : <span aria-current="page" class={`${dark ? 'text-white' : 'text-slate-800'}`}>{c.name}</span>}
+      </li>
+    ))}
+  </ol>
+</nav>
+<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

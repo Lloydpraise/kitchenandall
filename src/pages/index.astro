@@ -4,25 +4,21 @@ import HeroSlider from '../components/heroSlider';
 import AnimatedBanner from '../components/AnimatedBanner';
 import ProductCard from '../components/productCard';
 import { supabase } from '../lib/supabase';
+import { categories, categoryUrl } from '../lib/categories';
 
-const categoryNames = ["Cooking", "Refrigeration", "Food Prep", "Stainless Steel"];
-
-const { data: allCategoryProducts, error: categoryImageError } = await supabase
+// One photo per category: the first product in it
+const { data: categoryProducts, error: categoryImageError } = await supabase
   .from('products')
-  .select('*')
-  .in('major_category', categoryNames)
+  .select('major_category, image_url')
+  .in('major_category', categories.map((c) => c.name))
   .order('id', { ascending: true });
 
 if (categoryImageError) console.error('Category image lookup error:', categoryImageError);
 
-const navCategories = categoryNames.map((name) => {
-  const firstProduct = (allCategoryProducts || []).find((product) => product.major_category === name);
-
-  return {
-    name,
-    img: firstProduct?.image_url || `/images/categories/${name.toLowerCase().replace(/\s+/g, '-')}.jpg`
-  };
-});
+const categoryTiles = categories.map((c) => ({
+  ...c,
+  img: (categoryProducts || []).find((p) => p.major_category === c.name && p.image_url)?.image_url,
+}));
 
 const { data: featuredProducts, error } = await supabase
   .from('products')
@@ -37,17 +33,33 @@ if (error) console.error('Featured products error:', error);
       <HeroSlider client:load />
     </section>
 
-    <section class="max-w-7xl mx-auto px-4 -mt-12 relative z-20 grid grid-cols-2 lg:grid-cols-4 gap-6">
-      {navCategories.map((cat) => (
-        <a href={`/category/${cat.name.toLowerCase().replace(' ', '-')}`} class="group relative h-48 rounded-2xl overflow-hidden cursor-pointer shadow-2xl border-4 border-white">
-          <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={`background-image: url('${cat.img}')`}></div>
-          <div class="absolute inset-0 bg-slate-900/40 group-hover:bg-orange-600/70 transition-colors duration-500"></div>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <h3 class="text-white font-black uppercase tracking-tighter text-xl">{cat.name}</h3>
-          </div>
-        </a>
-      ))}
+    <section class="max-w-7xl mx-auto px-4 -mt-12 relative z-20" aria-label="Shop by category">
+      <div class="relative">
+        <div data-cat-scroller class="grid grid-flow-col grid-rows-2 lg:grid-rows-1 auto-cols-[44%] sm:auto-cols-[30%] lg:auto-cols-[calc((100%-4.5rem)/4)] gap-3 sm:gap-4 lg:gap-6 overflow-x-auto snap-x snap-mandatory py-2 -my-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {categoryTiles.map((cat) => (
+            <a href={categoryUrl(cat)} class="group relative h-36 sm:h-44 lg:h-52 snap-start rounded-2xl overflow-hidden shadow-md border-4 border-white bg-slate-700">
+              {cat.img && <div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style={`background-image: url('${cat.img}')`}></div>}
+              <div class="absolute inset-0 bg-slate-900/50 group-hover:bg-orange-600/80 transition-colors duration-500"></div>
+              <h2 class="absolute inset-x-3 bottom-3 lg:inset-x-4 lg:bottom-4 text-white font-black uppercase tracking-tight text-sm sm:text-base lg:text-xl leading-tight">{cat.name}</h2>
+            </a>
+          ))}
+        </div>
+        <button type="button" data-cat-prev aria-label="Previous categories" class="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full bg-white text-slate-900 shadow-xl border border-slate-200 hover:text-orange-600">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m15 6-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+        <button type="button" data-cat-next aria-label="More categories" class="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 h-11 w-11 items-center justify-center rounded-full bg-white text-slate-900 shadow-xl border border-slate-200 hover:text-orange-600">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m9 6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+      </div>
     </section>
+    <script is:inline>
+      (() => {
+        const row = document.querySelector('[data-cat-scroller]');
+        const step = () => (row ? row.clientWidth * 0.75 : 0);
+        document.querySelector('[data-cat-prev]')?.addEventListener('click', () => row?.scrollBy({ left: -step(), behavior: 'smooth' }));
+        document.querySelector('[data-cat-next]')?.addEventListener('click', () => row?.scrollBy({ left: step(), behavior: 'smooth' }));
+      })();
+    </script>
 
     <main class="max-w-7xl mx-auto px-4 py-24">
       <div class="flex items-end justify-between mb-12 border-b border-slate-200 pb-4">
@@ -57,7 +69,7 @@ if (error) console.error('Featured products error:', error);
         </div>
         <a href="/catalog" class="text-orange-600 font-black uppercase text-sm tracking-widest hover:underline">View All</a>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
         {(featuredProducts || []).map((product) => (
           <ProductCard product={product} client:visible />
         ))}

@@ -41,61 +41,61 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <div 
+    <div
       onClick={handleCardClick}
-      className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-orange-500 hover:shadow-2xl transition-all duration-500 flex flex-col h-full cursor-pointer"
+      className="group bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-orange-500 hover:shadow-xl transition-all duration-300 flex flex-col h-full cursor-pointer"
     >
-      
-      {/* Image Section */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 block">
-        <img 
-          src={product.image_url} 
+      {/* Image: the same height on every card */}
+      <div className="relative h-36 sm:h-44 lg:h-52 shrink-0 overflow-hidden bg-slate-100">
+        <img
+          src={product.image_url}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        
-        {/* STOCK BADGE - Dynamic colors */}
-        <div className={`absolute top-4 left-4 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg z-10 ${
+        <span className={`absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide shadow ${
           isOutOfStock ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
         }`}>
-          {isOutOfStock ? '● Out of Stock' : '● In Stock'}
-        </div>
+          {isOutOfStock ? 'Out of stock' : 'In stock'}
+        </span>
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
-        <span className="text-[10px] font-bold text-orange-600 uppercase tracking-widest italic">Industrial Grade</span>
-        
-        <h3 className="font-extrabold text-slate-900 text-xl mt-1 group-hover:text-orange-600 transition-colors line-clamp-1">
+      <div className="p-3 sm:p-4 flex flex-col flex-1 min-w-0">
+        <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-orange-600 transition-colors" title={product.name}>
           {product.name}
         </h3>
-        
-        <p className="text-slate-500 text-sm mt-2 line-clamp-2 leading-snug flex-1">
+        <p className="text-slate-500 text-xs sm:text-sm mt-1 truncate">
           {product.description}
         </p>
-        
-        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-          <div>
-            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-tight">Price Excl. VAT (16%)</span>
-            <span className="text-2xl font-black text-slate-900">
-              KSH {Number(product.price).toLocaleString()}
-            </span>
-          </div>
 
-          {/* ADD TO CART - Disabled if out of stock */}
-          <button 
+        <div className="mt-auto pt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-2">
+          <span className="whitespace-nowrap text-[15px] sm:text-lg font-black text-slate-900">
+            KSh {Number(product.price).toLocaleString()}
+          </span>
+          {/* Add to cart, disabled when out of stock */}
+          <button
             type="button"
             disabled={isOutOfStock}
             onClick={handleAddToCart}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all ${
-              isOutOfStock 
-              ? 'bg-slate-100 text-slate-300 cursor-not-allowed opacity-50' 
-              : 'bg-slate-900 text-white hover:bg-orange-600 shadow-md active:scale-95 cursor-pointer'
+            aria-label={`Add ${product.name} to cart`}
+            title="Add to cart"
+            className={`shrink-0 inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full transition-all ${
+              isOutOfStock
+              ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
+              : toastVisible ? 'bg-green-500 text-white' : 'bg-slate-900 text-white hover:bg-orange-600 shadow active:scale-95 cursor-pointer'
             }`}
           >
-            <span>Add</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-            </svg>
+            {toastVisible ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m5 12 5 5L20 7" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <circle cx="9" cy="20" r="1.4" />
+                <circle cx="18" cy="20" r="1.4" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 3.5h2.6l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1l1.6-6.8H6.2" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
