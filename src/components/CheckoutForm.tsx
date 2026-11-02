@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import WhatsAppIcon from './WhatsAppIcon';
 import { useStore } from '@nanostores/react';
 import { cartItems, clearCart } from '../stores/cart';
+import { track } from '../lib/analytics';
 
 const WHATSAPP_PHONE = import.meta.env.PUBLIC_WHATSAPP_NUMBER ?? '254741045143';
 
@@ -34,6 +35,18 @@ export default function CheckoutForm() {
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  // Checkout started: once per visit to this page, only when the cart has something in it.
+  useEffect(() => {
+    if (!items.length) return;
+    track('checkout_start', {
+      value: subtotal,
+      quantity: items.reduce((sum, item) => sum + item.quantity, 0),
+      label: `${items.length} product${items.length > 1 ? 's' : ''}`,
+      location: 'checkout',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (window.sessionStorage.getItem('added-to-cart-toast') === 'true') {
@@ -65,6 +78,14 @@ export default function CheckoutForm() {
     // Tracked as begin_checkout (-> Meta InitiateCheckout), not a Purchase event,
     // so ad optimization isn't trained on unconfirmed "sales."
     pushCheckoutDataLayerEvent(items);
+    // Order sent to WhatsApp: what was ordered and its value. The customer's name, phone and notes are NOT sent.
+    track('order_sent', {
+      value: subtotal,
+      quantity: items.reduce((sum, item) => sum + item.quantity, 0),
+      items: items.map((item) => ({ id: item.id, name: item.name, price: item.price, quantity: item.quantity })),
+      label: 'whatsapp order',
+      location: 'checkout',
+    });
 
     setIsSubmitting(true);
     clearCart();

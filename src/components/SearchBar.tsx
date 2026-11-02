@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { categories, categoryUrl, subCategoryUrl } from '../lib/categories';
+import { track } from '../lib/analytics';
 
 // Every category and sub-category as a search target, e.g. "bain" finds Bain Marie
 const categoryTargets = categories.flatMap((c) => [
@@ -15,6 +16,7 @@ export default function SearchBar() {
   const [categoryResults, setCategoryResults] = useState<typeof categoryTargets>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const lastTracked = useRef('');
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,6 +56,18 @@ export default function SearchBar() {
     return () => clearTimeout(debounce);
   }, [searchQuery]);
 
+  // Record a search once the visitor stops typing (not every letter), with how many products it found.
+  useEffect(() => {
+    const term = searchQuery.trim().toLowerCase();
+    if (term.length < 3) return;
+    const t = setTimeout(() => {
+      if (term === lastTracked.current) return;
+      lastTracked.current = term;
+      track('search', { label: term, results: results.length, location: 'search-bar' });
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [searchQuery, results]);
+
   return (
     <div className="relative w-full" ref={searchRef}>
       <input
@@ -76,7 +90,7 @@ export default function SearchBar() {
             <a
               key={product.id}
               href={`/product/${product.slug}`}
-              onClick={() => setIsSearching(false)}
+              onClick={() => { setIsSearching(false); track('search_click', { label: searchQuery.trim().toLowerCase(), product_id: product.id, product_name: product.name, location: 'search-bar' }); }}
               className="flex items-center gap-4 p-3 hover:bg-slate-50 border-b border-slate-50 last:border-none transition-colors"
             >
               <div className="w-10 h-10 bg-slate-100 rounded-lg overflow-hidden shrink-0">

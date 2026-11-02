@@ -1,6 +1,7 @@
 import { useStore } from '@nanostores/react';
 import { useState } from 'react';
 import { cartItems, removeFromCart, updateQuantity } from '../stores/cart';
+import { track } from '../lib/analytics';
 
 export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +14,7 @@ export default function CartDrawer() {
       <button
         type="button"
         className="relative p-2 text-slate-800 hover:text-orange-600 transition-colors"
-        onClick={() => setIsOpen(true)}
+        onClick={() => { setIsOpen(true); track('cart_open', { quantity: items.length, value: subtotal, location: 'header' }); }}
         aria-label="Open cart"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -57,7 +58,7 @@ export default function CartDrawer() {
                         <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-black">-</button>
                         <span className="text-[12px] font-bold">{item.quantity}</span>
                         <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full bg-slate-100 text-slate-700 font-black">+</button>
-                        <button onClick={() => removeFromCart(item.id)} className="ml-2 text-[11px] text-red-500 font-bold uppercase">Remove</button>
+                        <button onClick={() => { removeFromCart(item.id); track('remove_from_cart', { product_id: item.id, product_name: item.name, value: item.price * item.quantity, quantity: item.quantity, location: 'cart-drawer' }); }} className="ml-2 text-[11px] text-red-500 font-bold uppercase">Remove</button>
                       </div>
                       <p className="mt-3 text-lg font-black text-slate-900">KSH {(item.price * item.quantity).toLocaleString()}</p>
                     </div>
@@ -74,6 +75,7 @@ export default function CartDrawer() {
             </div>
             <a
               href="/checkout"
+              data-track-area="cart-drawer"
               className="mt-5 inline-flex w-full items-center justify-center rounded-3xl bg-orange-600 px-4 py-4 text-sm font-black uppercase tracking-widest text-white shadow-lg hover:bg-orange-700 transition-all"
             >
               Checkout

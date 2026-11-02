@@ -20,6 +20,7 @@ const FloatingWhatsApp = ({ isProductPage = false }: FloatingWhatsAppProps) => {
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 hover:scale-110 transition-transform duration-200 flex flex-col items-center gap-2"
+      data-track-area="floating-button"
       aria-label="Chat on WhatsApp"
       title="Chat with us on WhatsApp"
     >

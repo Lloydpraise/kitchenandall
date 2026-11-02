@@ -5,6 +5,10 @@ import AnimatedBanner from '../components/AnimatedBanner';
 import ProductCard from '../components/productCard';
 import { supabase } from '../lib/supabase';
 import { categories, categoryUrl } from '../lib/categories';
+import BlackFridayBanner from '../components/BlackFridayBanner.astro';
+import { loadOffers, withOffers } from '../lib/offers';
+
+const liveOffers = await loadOffers(supabase);
 
 // One photo per category: the first product in it
 const { data: categoryProducts, error: categoryImageError } = await supabase
@@ -20,12 +24,29 @@ const categoryTiles = categories.map((c) => ({
   img: (categoryProducts || []).find((p) => p.major_category === c.name && p.image_url)?.image_url,
 }));
 
-const { data: featuredProducts, error } = await supabase
+const { data: featuredRows, error } = await supabase
   .from('products')
   .select('*')
   .limit(8);
 
 if (error) console.error('Featured products error:', error);
+const featuredProducts = withOffers(featuredRows, liveOffers);
+
+// Black Friday (or any live offer with "show banner" ticked in Admin > Offers): products for the flowing banner
+const bannerOffer = liveOffers.headline?.show_banner ? liveOffers.headline : null;
+const bannerIds = bannerOffer ? [...liveOffers.byProduct].filter(([, o]) => o.id === bannerOffer.id).map(([id]) => id) : [];
+let bannerProducts: any[] = [];
+if (bannerIds.length) {
+  const { data } = await supabase
+    .from('products')
+    .select('id, slug, name, price, image_url')
+    .in('id', bannerIds.slice(0, 300))
+    .not('image_url', 'is', null)
+    .gt('price', 0)
+    .order('id')
+    .limit(16);
+  bannerProducts = withOffers(data, liveOffers);
+}
 ---
 <Layout>
   <div class="relative min-h-screen bg-slate-50">
@@ -60,6 +81,8 @@ if (error) console.error('Featured products error:', error);
         document.querySelector('[data-cat-next]')?.addEventListener('click', () => row?.scrollBy({ left: step(), behavior: 'smooth' }));
       })();
     </script>
+
+    {bannerOffer && <BlackFridayBanner offer={bannerOffer} products={bannerProducts} total={bannerIds.length} />}
 
     <main class="max-w-7xl mx-auto px-4 py-24">
       <div class="flex items-end justify-between mb-12 border-b border-slate-200 pb-4">

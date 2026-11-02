@@ -14,7 +14,7 @@ export default function MarketingPopup() {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-      <div className="relative bg-[#0F172A] w-full max-w-md p-8 rounded-3xl border border-slate-800 shadow-2xl">
+      <div data-track-area="popup" className="relative bg-[#0F172A] w-full max-w-md p-8 rounded-3xl border border-slate-800 shadow-2xl">
         <button onClick={() => setShowPopup(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
           <X size={24} />
         </button>

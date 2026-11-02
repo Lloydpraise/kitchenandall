@@ -8,14 +8,18 @@ import ProductCard from '../../components/productCard';
 import { parseContent } from '../../lib/productContent';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { categoryOf, categoryUrl, subCategoryUrl } from '../../lib/categories';
+import { loadOffers, withOffer, withOffers } from '../../lib/offers';
 
 const { slug } = Astro.params;
+const liveOffers = await loadOffers(supabase);
 
-const { data: product, error } = await supabase
+const { data: rawProduct, error } = await supabase
   .from('products')
   .select('*')
   .eq('slug', slug)
   .single();
+// On a live offer (Admin > Offers) price becomes the sale price and old_price the normal price
+const product = rawProduct ? withOffer(rawProduct, liveOffers) : null;
 
 // A product whose link was renamed keeps its old slugs in old_slugs: send visitors and Google to the new link
 if (!product && slug) {
@@ -38,7 +42,7 @@ if (product) {
     .neq('id', product.id)
     .limit(5);
   
-  relatedProducts = related || [];
+  relatedProducts = withOffers(related, liveOffers);
 }
 
 const siteUrl = 'https://kitchenandall.co.ke';
@@ -75,6 +79,7 @@ const productJsonLd = product
         url: canonical,
         priceCurrency: 'KES',
         price: Number(product.price),
+        ...(product.offer?.ends_at ? { priceValidUntil: new Date(Date.parse(product.offer.ends_at) - 1000).toISOString().slice(0, 10) } : {}),
         itemCondition: 'https://schema.org/NewCondition',
         availability: (product.stock_quantity ?? 20) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       },
@@ -86,6 +91,7 @@ const productJsonLd = product
   title={product ? (product.meta_title || product.name) : "Product not found"}
   description={metaDescription}
   canonicalUrl={canonical}
+  productOffer={product?.offer ? { ...product.offer, price: Number(product.price) } : undefined}
 >
   <main class="min-h-[calc(100vh-7rem)] bg-slate-50">
     {product ? (
@@ -131,4 +137,4 @@ const productJsonLd = product
       </div>
     )}
   </main>
-</Layout>
+</Layout>

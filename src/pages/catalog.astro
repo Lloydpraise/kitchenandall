@@ -4,13 +4,15 @@ import ProductCard from '../components/productCard';
 import { supabase } from '../lib/supabase';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { categories, categoryUrl } from '../lib/categories';
+import { loadOffers, withOffers } from '../lib/offers';
 
-const { data: allProducts, error } = await supabase
+const { data: catalogRows, error } = await supabase
   .from('products')
   .select('*')
   .order('id', { ascending: true });
 
 if (error) console.error('All products error:', error);
+const allProducts = withOffers(catalogRows, await loadOffers(supabase));
 ---
 
 <Layout title="All Commercial Kitchen Equipment | Kitchen And All Kenya" description="Browse every product from Kitchen And All: commercial kitchen equipment, stainless steel sinks, tables and custom fabrication, delivered across Kenya." canonicalUrl="https://kitchenandall.co.ke/catalog">

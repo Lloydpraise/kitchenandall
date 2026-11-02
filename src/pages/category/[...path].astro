@@ -6,6 +6,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ProductCard from '../../components/productCard';
 import { supabase } from '../../lib/supabase';
 import { categories, findCategory, categoryUrl, subCategoryUrl, legacyCategoryRedirects } from '../../lib/categories';
+import { loadOffers, withOffers } from '../../lib/offers';
 
 const siteUrl = 'https://kitchenandall.co.ke';
 const parts = (Astro.params.path || '').split('/').filter(Boolean);
@@ -38,7 +39,7 @@ if (isIndex) {
   if (sub) query = query.eq('sub_category', sub.name);
   const { data, error } = await query.order('id');
   if (error) console.error('Category query error:', error);
-  products = data || [];
+  products = withOffers(data, await loadOffers(supabase));
   for (const p of products) {
     counts[p.sub_category] = (counts[p.sub_category] || 0) + 1;
     if (p.image_url && !covers[p.sub_category]) covers[p.sub_category] = p.image_url;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { addToCart } from '../stores/cart';
 import { parseContent, toBlocks } from '../lib/productContent';
 import WhatsAppIcon from './WhatsAppIcon';
+import { setPageProduct, track } from '../lib/analytics';
 
 export interface Product {
   id: number;
@@ -16,6 +17,25 @@ export interface Product {
   sub_category?: string | null;
   // Structured copy written by the SEO engine (jsonb). Optional: older products fall back to `description`.
   content?: unknown;
+  // Set by withOffer() in src/lib/offers.ts when the product is in a live sale (price is then the sale price, old_price the normal one)
+  offer?: { badge: string; percent: number; ends_at: string | null } | null;
+}
+
+// "4d 03h 12m" until the offer ends; empty when there is no end date or it has passed
+function useCountdown(endsAt?: string | null) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    if (!endsAt) return;
+    setNow(Date.now());
+    const t = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(t);
+  }, [endsAt]);
+  if (!endsAt || now === null) return '';
+  const left = Date.parse(endsAt) - now;
+  if (!(left > 0)) return '';
+  const d = Math.floor(left / 86_400_000), h = Math.floor(left / 3_600_000) % 24, m = Math.floor(left / 60_000) % 60;
+  const z = (n: number) => String(n).padStart(2, '0');
+  return d > 0 ? `${d}d ${z(h)}h ${z(m)}m` : `${z(h)}h ${z(m)}m`;
 }
 
 const SITE_URL = 'https://kitchenandall.co.ke';
@@ -90,6 +110,9 @@ export default function ProductDetail({ product }: { product: Product }) {
     () => hasDiscount ? Math.round(((product.old_price as number) - product.price) / (product.old_price as number) * 100) : 0,
     [hasDiscount, product.old_price, product.price]
   );
+  const offer = product.offer;
+  const countdown = useCountdown(offer?.ends_at);
+  const savings = hasDiscount ? Number(product.old_price) - Number(product.price) : 0;
   const stockQuantity = product.stock_quantity ?? 20;
   const stockLabel = stockQuantity > 0 ? 'In stock' : 'Out of stock';
   const isOutOfStock = stockQuantity <= 0;
@@ -116,18 +139,25 @@ export default function ProductDetail({ product }: { product: Product }) {
   // this is the "Product views" event Meta reported as Missing.
   useEffect(() => {
     pushDataLayerEvent('view_item', product);
+    setPageProduct({ id: product.id, name: product.name, category: product.sub_category || product.major_category || null });
+    track('product_view', { product_id: product.id, product_name: product.name, category: product.sub_category || product.major_category || null, value: product.price });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);
+
+  const trackAdd = (label: string) =>
+    track('add_to_cart', { product_id: product.id, product_name: product.name, category: product.sub_category || product.major_category || null, value: product.price, quantity: 1, label, location: 'product' });
 
   const handleAddToCart = () => {
     addToCart(itemPayload);
     pushDataLayerEvent('add_to_cart', product);
+    trackAdd('product page');
     setToastVisible(true);
   };
 
   const handleBuyNow = () => {
     addToCart(itemPayload);
     pushDataLayerEvent('add_to_cart', product);
+    trackAdd('buy now');
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem('added-to-cart-toast', 'true');
     }
@@ -165,11 +195,17 @@ export default function ProductDetail({ product }: { product: Product }) {
                 {stockLabel}
               </span>
               {hasDiscount && (
-                <span className="inline-flex items-center gap-2 rounded-full bg-orange-600 px-4 py-2 text-xs font-black uppercase tracking-[0.35em] text-white">
+                <span className="inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-xs font-black uppercase tracking-[0.35em] text-white">
                   {discountPercent}% off
                 </span>
               )}
             </div>
+            {offer && (
+              <div className="bf-ribbon absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-black/90 px-4 py-2.5 text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-amber-400">
+                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-amber-400 bf-announce-dot" />
+                {offer.badge}
+              </div>
+            )}
           </div>
 
           <div className="min-w-0 space-y-6">
@@ -182,18 +218,39 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
               <div className="mt-5 flex flex-wrap items-end gap-4">
                 <div>
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-4xl font-black text-slate-900">KSH {Number(product.price).toLocaleString()}</span>
+                  <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                    <span className={`text-4xl font-black ${hasDiscount ? 'text-red-600' : 'text-slate-900'}`}>KSH {Number(product.price).toLocaleString()}</span>
                     {hasDiscount && (
-                      <span className="text-sm text-slate-500 line-through">KSH {Number(product.old_price).toLocaleString()}</span>
+                      <span className="text-base font-semibold text-slate-500 line-through">KSH {Number(product.old_price).toLocaleString()}</span>
                     )}
                   </div>
+                  {hasDiscount && (
+                    <p className="mt-1 text-sm font-bold text-emerald-700">You save KSH {savings.toLocaleString()}</p>
+                  )}
                 </div>
-                <span className={`rounded-full px-4 py-2 text-sm font-black uppercase tracking-[0.25em] ${isOutOfStock ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                  {isOutOfStock ? 'Out of stock' : 'Available now'}
-                </span>
+                {isOutOfStock && (
+                  <span className="rounded-full bg-red-50 px-4 py-2 text-sm font-black uppercase tracking-[0.25em] text-red-700">Out of stock</span>
+                )}
               </div>
             </div>
+
+            {offer && (
+              <div className="overflow-hidden rounded-2xl bg-black text-white shadow-lg">
+                <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+                  <div className="min-w-0">
+                    <p className="text-xs font-black uppercase tracking-[0.3em] text-amber-400">{offer.badge}</p>
+                    <p className="mt-1 text-base font-bold">{offer.percent}% off this item while the sale lasts</p>
+                  </div>
+                  {countdown && (
+                    <div className="shrink-0 rounded-xl bg-white/10 px-4 py-2 text-center">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Ends in</p>
+                      <p className="font-mono text-lg font-black tabular-nums text-amber-400">{countdown}</p>
+                    </div>
+                  )}
+                </div>
+                <div aria-hidden="true" className="h-1 bf-stripe" />
+              </div>
+            )}
 
             {/* Key features: right under the title and price */}
             {content.features.length > 0 && (
@@ -233,7 +290,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                 href={whatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden lg:flex min-h-[52px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:border-[#25D366] hover:bg-green-50 hover:shadow-md"
+                data-track-area="product-buy-panel"
+                className="flex min-h-[52px] w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:border-[#25D366] hover:bg-green-50 hover:shadow-md"
               >
                 <WhatsAppIcon className="h-6 w-6" />
                 Ask about this product on WhatsApp
@@ -324,6 +382,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-track-area="product-help-box"
                     className="inline-flex shrink-0 items-center gap-3 rounded-xl bg-white px-6 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-green-50"
                   >
                     <WhatsAppIcon className="h-6 w-6" />
@@ -340,7 +399,10 @@ export default function ProductDetail({ product }: { product: Product }) {
       <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(15,23,42,0.12)]">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="truncate text-xl font-black leading-tight text-slate-900">KSH {Number(product.price).toLocaleString()}</p>
+            {hasDiscount && (
+              <p className="truncate text-xs font-semibold leading-tight text-slate-400"><span className="line-through">KSH {Number(product.old_price).toLocaleString()}</span> <span className="font-black uppercase text-red-600">-{discountPercent}%</span></p>
+            )}
+            <p className={`truncate text-xl font-black leading-tight ${hasDiscount ? 'text-red-600' : 'text-slate-900'}`}>KSH {Number(product.price).toLocaleString()}</p>
           </div>
           <button
             type="button"

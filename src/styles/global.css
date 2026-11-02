@@ -46,3 +46,47 @@ body {
   width: max-content;
   animation: marquee 60s linear infinite;
 }
+/* ───────── Black Friday / offers ───────── */
+/* thin moving amber stripe (offer box on product pages, announcement bar) */
+.bf-stripe {
+  background: repeating-linear-gradient(-45deg, #fbbf24 0 12px, #111 12px 24px);
+  background-size: 200% 100%;
+  animation: bf-stripe-move 40s linear infinite;
+}
+@keyframes bf-stripe-move { to { background-position: 100% 0; } }
+
+/* slow sweep of light across badges */
+.bf-badge, .bf-ribbon { overflow: hidden; }
+.bf-badge::after, .bf-ribbon::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(251, 191, 36, .28) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: bf-shine 14s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bf-shine { 60%, 100% { transform: translateX(100%); } }
+
+/* home page deals banner: rows that drift slowly sideways, forever */
+.bf-flow { display: flex; width: max-content; animation: bf-flow 200s linear infinite; }
+.bf-flow.bf-reverse { animation-direction: reverse; animation-duration: 240s; }
+.bf-flow.bf-products { animation-duration: 240s; }
+.bf-flow-wrap:hover .bf-flow { animation-play-state: paused; }
+@keyframes bf-flow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* glowing headline in the deals banner */
+.bf-glow {
+  background: linear-gradient(90deg, #fbbf24, #fff7d6, #f97316, #fbbf24);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: bf-glow 20s ease-in-out infinite;
+}
+@keyframes bf-glow { 50% { background-position: 100% 0; } }
+
+/* announcement bar text: slides in, then gently pulses */
+.bf-announce-dot { animation: bf-pulse 4s ease-in-out infinite; }
+@keyframes bf-pulse { 50% { opacity: .55; transform: scale(.9); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bf-stripe, .bf-flow, .bf-glow, .bf-announce-dot, .bf-badge::after, .bf-ribbon::after { animation: none !important; }
+}

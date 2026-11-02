@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import WhatsAppIcon from './WhatsAppIcon';
 import { supabase } from '../lib/supabase';
+import { track } from '../lib/analytics';
 
 export default function GetQuoteForm() {
   const [name, setName] = useState('');
@@ -31,6 +32,7 @@ export default function GetQuoteForm() {
       return;
     }
 
+    track('quote_submit', { label: 'quote form', location: 'quote-page' }); // no name/phone is sent to analytics
     setIsSuccess(true);
   };
 
@@ -40,6 +42,7 @@ export default function GetQuoteForm() {
         <p className="text-2xl font-black text-slate-900">Thank you, {name}!</p>
         <p className="mt-4 text-slate-600">We've received your request and will get back to you shortly.</p>
         <a
+          data-track-area="quote-thank-you"
           href={`https://wa.me/254741045143?text=${encodeURIComponent(`Hi, I just submitted a quote request as ${name}. I'd like to follow up.`)}`}
           target="_blank"
           rel="noreferrer"

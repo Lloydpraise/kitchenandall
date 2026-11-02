@@ -113,7 +113,32 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     .serp .st { color:#1a0dab; font-size:17px; line-height:1.3; } .serp .su { color:#15803d; font-size:12px; margin:2px 0; } .serp .sd { color:#4b4b4b; font-size:13px; }
     #toast { position:fixed; left:50%; bottom:90px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:12px 18px; border-radius:999px; font-size:14px; z-index:40; max-width:90vw; text-align:center; }
     #toast.bad { background:var(--bad); } #toast[hidden] { display:none; }
-    @media (max-width:640px) { main { padding:12px; } #list-all, #list-prices { grid-template-columns:1fr; } }
+    .offer { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .offer .om { flex:1; min-width:200px; }
+    .offer .on1 { font-weight:700; font-size:16px; }
+    .offer .os { font-size:13px; color:var(--muted); margin-top:4px; }
+    .obadge { display:inline-block; background:#111; color:#fbbf24; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:4px 9px; border-radius:6px; margin-right:6px; }
+    .ostate { display:inline-block; font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; }
+    .ostate.live { background:#dcfce7; color:var(--ok); } .ostate.soon { background:#e0f2fe; color:#0369a1; } .ostate.off { background:#f1f1ef; color:var(--muted); }
+    .ofrm { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:14px; }
+    .ofrm .g2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .ofrm input[type=number], .ofrm input[type=datetime-local] { font:inherit; width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .chk { display:flex; gap:8px; align-items:center; font-size:15px; }
+    .chk input { width:20px; height:20px; }
+    .oprods { border:1px solid var(--line); border-radius:10px; max-height:460px; overflow-y:auto; }
+    .oprow { display:flex; gap:10px; align-items:center; padding:8px 10px; border-bottom:1px solid var(--line); cursor:pointer; }
+    .oprow:last-child { border-bottom:0; } .oprow.sel { background:#fff7ed; }
+    .oprow input { width:20px; height:20px; flex:none; }
+    .oprow .rth { width:44px; height:44px; }
+    .oprow .opn { flex:1; min-width:0; font-size:14px; line-height:1.3; }
+    .oprow .opp { font-size:12px; color:var(--muted); white-space:nowrap; text-align:right; }
+    .oprow .opp b { color:var(--bad); }
+    #offersList .bar .primary { white-space:nowrap; flex:none; }
+    .obar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .obar input[type=search] { flex:1; min-width:180px; }
+    .oacts { display:flex; gap:8px; flex-wrap:wrap; } .oacts .primary { margin-left:auto; }
+    button.danger { color:var(--bad); border-color:#fecaca; }
+    @media (max-width:640px) { main { padding:12px; } #list-all, #list-prices { grid-template-columns:1fr; } .ofrm .g2 { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -132,12 +157,16 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
       <div class="top">
         <header>
           <h1>Products</h1>
-          <form method="post" action="/api/admin/logout"><button type="submit">Sign out</button></form>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <a class="live" href="/admin/analytics">📊 Analytics</a>
+            <form method="post" action="/api/admin/logout"><button type="submit">Sign out</button></form>
+          </div>
         </header>
         <nav class="tabs" id="tabs">
           <button type="button" data-view="all" class="on">All products</button>
           <button type="button" data-view="review">Review SEO <span class="pill" id="nReview"></span></button>
           <button type="button" data-view="prices">Add prices <span class="pill" id="nPrices"></span></button>
+          <button type="button" data-view="offers">Offers <span class="pill" id="nOffers"></span></button>
         </nav>
       </div>
       <main>
@@ -169,6 +198,12 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
           <p class="topnote">Changing a name here changes it on the website. The link (slug) stays the same.</p>
           <div id="list-prices"></div>
           <div class="more"><button id="more-prices" hidden>Show more</button></div>
+        </section>
+
+        <section id="v-offers" hidden>
+          <div id="offersNote"></div>
+          <div id="offersList"></div>
+          <div id="offerForm"></div>
         </section>
 
         <input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden />
@@ -391,12 +426,12 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
           function show(v) {
             if (E && !closeEditor()) return;
             view = v;
-            ['all', 'review', 'prices'].forEach(function (k) {
+            ['all', 'review', 'prices', 'offers'].forEach(function (k) {
               $('v-' + k).hidden = k !== v;
               $('tabs').querySelector('[data-view="' + k + '"]').className = k === v ? 'on' : '';
             });
             try { history.replaceState(null, '', v === 'all' ? location.pathname : '#' + v); } catch (e) {}
-            if (v === 'all') renderAll(); else if (v === 'review') renderReview(); else renderPrices();
+            if (v === 'all') renderAll(); else if (v === 'review') renderReview(); else if (v === 'offers') renderOffers(); else renderPrices();
           }
 
           // ---------- the SEO editor ----------
@@ -646,6 +681,188 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
             }).catch(function (e) { setStatus(t.st, e.message, false); });
           };
 
+
+          // ---------- Offers (sales): Black Friday and any later ones ----------
+          var offers = null, offersError = '', OF = null; // OF = the offer being edited: { o, ids:Set, q, onlySel, shown }
+
+          function loadOffers() {
+            return api('/api/admin/offers').then(function (b) {
+              offers = b.offers || []; offersError = '';
+            }).catch(function (e) { offers = []; offersError = e.message; })
+              .then(function () { offerCount(); if (view === 'offers') renderOffers(); });
+          }
+          function offerState(o) {
+            var now = Date.now();
+            if (!o.active) return ['off', 'Switched off'];
+            if (o.ends_at && Date.parse(o.ends_at) <= now) return ['off', 'Ended'];
+            if (o.starts_at && Date.parse(o.starts_at) > now) return ['soon', 'Starts ' + niceDate(o.starts_at)];
+            return ['live', 'Live on the website'];
+          }
+          function offerCount() {
+            var n = (offers || []).filter(function (o) { return offerState(o)[0] === 'live'; }).length;
+            $('nOffers').textContent = n || '';
+          }
+          function niceDate(iso) {
+            if (!iso) return '';
+            return new Date(iso).toLocaleString('en-KE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+          }
+          // ISO -> value for <input type="datetime-local"> in this computer's time zone
+          function toLocalInput(iso) {
+            if (!iso) return '';
+            var d = new Date(iso), z = function (n) { return String(n).padStart(2, '0'); };
+            return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + 'T' + z(d.getHours()) + ':' + z(d.getMinutes());
+          }
+          function sale(price, pct) { return Math.round(Number(price) * (100 - Number(pct)) / 100); }
+
+          function renderOffers() {
+            var list = $('offersList'), note = $('offersNote'), form = $('offerForm');
+            list.innerHTML = ''; note.innerHTML = '';
+            if (OF) { list.hidden = true; form.hidden = false; renderOfferForm(); return; }
+            list.hidden = false; form.hidden = true; form.innerHTML = '';
+            if (offers === null) { list.appendChild(el('div', 'count', 'Loading offers…')); return; }
+            if (offersError) { note.appendChild(el('div', 'info', offersError)); return; }
+            var bar = el('div', 'bar');
+            var add = el('button', 'primary', '+ New offer'); add.type = 'button';
+            add.onclick = function () { editOffer(null); };
+            bar.appendChild(add);
+            bar.appendChild(el('div', 'meta', 'An offer takes a percentage off the products you pick. They show a sale badge and the new price, and the announcement bar and home banner advertise it.'));
+            list.appendChild(bar);
+            if (!offers.length) { list.appendChild(el('div', 'empty-state', 'No offers yet.')); return; }
+            offers.forEach(function (o) {
+              var c = el('div', 'offer'), m = el('div', 'om');
+              var t = el('div', 'on1'); t.appendChild(el('span', 'obadge', o.badge)); t.appendChild(document.createTextNode(o.name));
+              m.appendChild(t);
+              var s = offerState(o), stt = el('div', 'os');
+              stt.appendChild(el('span', 'ostate ' + s[0], s[1]));
+              stt.appendChild(document.createTextNode('  ' + o.percent_off + '% off · ' + plural(o.product_ids.length, 'product', 'products') + (o.ends_at ? ' · ends ' + niceDate(o.ends_at) : ' · no end date')));
+              m.appendChild(stt);
+              if (o.announcement) m.appendChild(el('div', 'os', '“' + o.announcement + '”'));
+              c.appendChild(m);
+              var acts = el('div', 'oacts');
+              var tog = el('button', 'sm', o.active ? 'Switch off' : 'Switch on'); tog.type = 'button';
+              tog.onclick = function () {
+                tog.disabled = true;
+                api('/api/admin/offers/' + o.id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !o.active }) })
+                  .then(function (b) { Object.assign(o, b.offer); toast(o.active ? 'Offer switched on' : 'Offer switched off'); offerCount(); renderOffers(); })
+                  .catch(function (e) { toast(e.message, true); tog.disabled = false; });
+              };
+              var ed = el('button', 'sm primary', 'Edit'); ed.type = 'button'; ed.onclick = function () { editOffer(o); };
+              acts.appendChild(tog); acts.appendChild(ed);
+              c.appendChild(acts);
+              list.appendChild(c);
+            });
+          }
+
+          function editOffer(o) {
+            OF = {
+              o: o ? Object.assign({}, o) : { name: '', badge: 'Sale', percent_off: 10, announcement: '', starts_at: null, ends_at: null, active: true, show_banner: true, product_ids: [] },
+              ids: new Set((o && o.product_ids) || []), q: '', onlySel: !!(o && o.product_ids.length), shown: 60
+            };
+            renderOffers(); window.scrollTo(0, 0);
+          }
+
+          function renderOfferForm() {
+            var f = $('offerForm'), o = OF.o; f.innerHTML = '';
+            var box = el('div', 'ofrm');
+            box.appendChild(el('div', 'on1', o.id ? 'Edit offer' : 'New offer'));
+
+            function text(val, ph, max) { var i = document.createElement('input'); i.type = 'text'; i.value = val || ''; i.placeholder = ph || ''; if (max) i.maxLength = max; return i; }
+            var name = text(o.name, 'Black Friday 2026', 80), badge = text(o.badge, 'Black Friday Sale', 30);
+            var pct = document.createElement('input'); pct.type = 'number'; pct.min = '1'; pct.max = '99'; pct.step = '0.5'; pct.value = o.percent_off;
+            var starts = document.createElement('input'); starts.type = 'datetime-local'; starts.value = toLocalInput(o.starts_at);
+            var ends = document.createElement('input'); ends.type = 'datetime-local'; ends.value = toLocalInput(o.ends_at);
+            var ann = text(o.announcement, 'Black Friday Sale: 10% off selected kitchen equipment', 160);
+
+            var g1 = el('div', 'g2'); g1.appendChild(field('Offer name (only you see this)', name)); g1.appendChild(field('Badge on products', badge)); box.appendChild(g1);
+            var g2 = el('div', 'g2'); g2.appendChild(field('Discount (% off)', pct)); g2.appendChild(el('div'));
+            box.appendChild(g2);
+            var g3 = el('div', 'g2'); g3.appendChild(field('Starts (empty = now)', starts)); g3.appendChild(field('Ends (empty = no end)', ends)); box.appendChild(g3);
+            var annW = field('Announcement bar text', ann); annW.appendChild(el('div', 'hint', 'Shows at the top of every page while the offer is live. Empty = a standard message.')); box.appendChild(annW);
+
+            function check(label, on) { var w = el('label', 'chk'), i = document.createElement('input'); i.type = 'checkbox'; i.checked = on; w.appendChild(i); w.appendChild(document.createTextNode(label)); return { w: w, i: i }; }
+            var act = check('Offer is switched on', o.active !== false), ban = check('Show the flowing deals banner on the home page', o.show_banner !== false);
+            box.appendChild(act.w); box.appendChild(ban.w);
+
+            // product picker
+            var head = el('div', 'on1'); box.appendChild(head);
+            var obar = el('div', 'obar');
+            var q = document.createElement('input'); q.type = 'search'; q.placeholder = 'Search products…'; q.value = OF.q;
+            var only = check('Only products in this offer', OF.onlySel);
+            obar.appendChild(q); obar.appendChild(only.w);
+            box.appendChild(obar);
+            var obar2 = el('div', 'obar');
+            var selAll = el('button', 'sm', 'Add all shown'), clr = el('button', 'sm', 'Remove all shown');
+            selAll.type = clr.type = 'button';
+            obar2.appendChild(selAll); obar2.appendChild(clr); box.appendChild(obar2);
+            var plist = el('div', 'oprods'); box.appendChild(plist);
+            var more = el('button', 'sm', 'Show more'); more.type = 'button'; box.appendChild(more);
+
+            function shownItems() {
+              return all.filter(byName(OF.q)).filter(function (p) { return !OF.onlySel || OF.ids.has(p.id); });
+            }
+            function paintHead() { head.textContent = 'Products in this offer: ' + OF.ids.size; }
+            function paintList() {
+              plist.innerHTML = '';
+              var items = shownItems(), p2 = Number(pct.value) || 0;
+              items.slice(0, OF.shown).forEach(function (p) {
+                var r = el('label', 'oprow' + (OF.ids.has(p.id) ? ' sel' : ''));
+                var c = document.createElement('input'); c.type = 'checkbox'; c.checked = OF.ids.has(p.id);
+                c.onchange = function () { if (c.checked) OF.ids.add(p.id); else OF.ids.delete(p.id); r.className = 'oprow' + (c.checked ? ' sel' : ''); paintHead(); };
+                var th = el('div', 'rth'); bg(th, p.image_url);
+                var n = el('div', 'opn', p.name);
+                var pr = el('div', 'opp');
+                if (hasPrice(p)) {
+                  pr.appendChild(document.createTextNode('KSh ' + fmtMoney(p.price)));
+                  if (p2 > 0 && p2 < 100) { pr.appendChild(document.createElement('br')); pr.appendChild(el('b', '', 'KSh ' + fmtMoney(sale(p.price, p2)))); }
+                } else pr.textContent = 'No price';
+                r.appendChild(c); r.appendChild(th); r.appendChild(n); r.appendChild(pr);
+                plist.appendChild(r);
+              });
+              if (!items.length) plist.appendChild(el('div', 'empty-state', OF.onlySel ? 'No products in this offer yet. Untick "Only products in this offer" to add some.' : 'No matches.'));
+              more.hidden = items.length <= OF.shown;
+            }
+            q.oninput = function () { OF.q = q.value; OF.shown = 60; paintList(); };
+            only.i.onchange = function () { OF.onlySel = only.i.checked; OF.shown = 60; paintList(); };
+            pct.oninput = paintList;
+            more.onclick = function () { OF.shown += 60; paintList(); };
+            selAll.onclick = function () { shownItems().forEach(function (p) { OF.ids.add(p.id); }); paintHead(); paintList(); };
+            clr.onclick = function () { shownItems().forEach(function (p) { OF.ids.delete(p.id); }); paintHead(); paintList(); };
+            paintHead(); paintList();
+
+            var stEl = el('div', 'status');
+            var acts = el('div', 'oacts');
+            var cancel = el('button', '', 'Cancel'); cancel.type = 'button';
+            cancel.onclick = function () { OF = null; renderOffers(); };
+            acts.appendChild(cancel);
+            if (o.id) {
+              var del = el('button', 'danger', 'Delete offer'); del.type = 'button';
+              del.onclick = function () {
+                if (!confirm('Delete "' + o.name + '"? The sale badges and prices disappear from the website. To pause it instead, use Switch off.')) return;
+                api('/api/admin/offers/' + o.id, { method: 'DELETE' })
+                  .then(function () { toast('Offer deleted'); OF = null; return loadOffers(); })
+                  .catch(function (e) { setStatus(stEl, e.message, false); });
+              };
+              acts.appendChild(del);
+            }
+            var save = el('button', 'primary', o.id ? 'Save offer' : 'Create offer'); save.type = 'button';
+            save.onclick = function () {
+              var body = {
+                name: name.value, badge: badge.value, percent_off: pct.value, announcement: ann.value,
+                starts_at: starts.value ? new Date(starts.value).toISOString() : null,
+                ends_at: ends.value ? new Date(ends.value).toISOString() : null,
+                active: act.i.checked, show_banner: ban.i.checked,
+                product_ids: Array.from(OF.ids)
+              };
+              save.disabled = true; setStatus(stEl, 'Saving…', true);
+              api(o.id ? '/api/admin/offers/' + o.id : '/api/admin/offers', { method: o.id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+                .then(function () { toast('Offer saved. The website updates within a minute.'); OF = null; return loadOffers(); })
+                .catch(function (e) { setStatus(stEl, e.message, false); save.disabled = false; });
+            };
+            acts.appendChild(save);
+            box.appendChild(acts); box.appendChild(stEl);
+            f.appendChild(box);
+          }
+
           // ---------- wiring ----------
           Array.prototype.forEach.call($('tabs').querySelectorAll('button'), function (b) { b.onclick = function () { show(b.getAttribute('data-view')); }; });
           $('q-all').oninput = function () { st.all.q = this.value; st.all.shown = PAGE; renderAll(); };
@@ -665,7 +882,8 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
             hasApproval = b.hasApproval !== false; hasSeoContent = b.hasSeoContent !== false;
             counts();
             var h = location.hash.replace('#', '');
-            show(h === 'review' || h === 'prices' ? h : 'all');
+            show(h === 'review' || h === 'prices' || h === 'offers' ? h : 'all');
+            loadOffers();
           }).catch(function (e) { $('count-all').textContent = ''; var d = el('div', 'msg', e.message); $('note').appendChild(d); });
         })();
       </script>

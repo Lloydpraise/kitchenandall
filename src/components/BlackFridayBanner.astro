@@ -1,0 +1,80 @@
+---
+// Home page deals banner: slow flowing rows of text and sale products. Shown while an offer with "show banner" is live.
+import { endsLabel, type OfferRow } from '../lib/offers';
+
+interface Props {
+  offer: OfferRow;
+  products: { id: number; slug: string; name: string; price: number; old_price?: number; image_url?: string }[];
+  total: number;
+}
+const { offer, products, total } = Astro.props;
+
+const pct = `${Number(offer.percent_off)}% OFF`;
+const words = [offer.badge || 'Black Friday Deals', pct, 'Black Friday Deals', pct, 'Built to pass health inspections'];
+const ends = endsLabel(offer.ends_at);
+const ksh = (n: number) => `KSh ${Math.round(n).toLocaleString('en-KE')}`;
+---
+<section class="relative overflow-hidden bg-black text-white mt-16" aria-label={`${offer.badge}: ${pct}`}>
+  <div aria-hidden="true" class="h-1.5 bf-stripe"></div>
+
+  {/* row 1: big words drifting left */}
+  <div class="bf-flow-wrap overflow-hidden border-b border-white/10 py-4" aria-hidden="true">
+    <div class="bf-flow">
+      {[0, 1].map(() => (
+        <div class="flex shrink-0 items-center">
+          {[...words, ...words].map((w, i) => (
+            <span class={`flex items-center whitespace-nowrap px-6 text-2xl sm:text-4xl font-black uppercase tracking-tight ${i % 2 ? 'text-transparent [-webkit-text-stroke:1px_rgba(251,191,36,.8)]' : 'text-amber-400'}`}>
+              {w}<span class="ml-12 text-orange-500 text-xl">✦</span>
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  {/* middle: the offer and the button */}
+  <div class="relative max-w-7xl mx-auto px-4 py-10 sm:py-12 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+    <div>
+      <p class="text-xs font-black uppercase tracking-[0.4em] text-orange-500">Limited time · {total} products</p>
+      <h2 class="mt-3 text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-none">
+        <span class="bf-glow">Black Friday Deals</span>
+      </h2>
+      <p class="mt-4 max-w-xl text-slate-300 text-base sm:text-lg">
+        {Number(offer.percent_off)}% off our best-selling commercial kitchen equipment, made from high-quality stainless steel.{ends ? ` Ends ${ends}.` : ''}
+      </p>
+    </div>
+    <a href="/deals" class="group inline-flex shrink-0 items-center justify-center gap-3 rounded-xl bg-amber-400 px-8 py-5 text-sm font-black uppercase tracking-widest text-black shadow-[0_0_40px_rgba(251,191,36,.35)] transition hover:bg-amber-300">
+      Shop the deals
+      <svg class="h-5 w-5 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+    </a>
+  </div>
+
+  {/* row 2: sale products drifting right (hover pauses it) */}
+  {products.length > 0 && (
+    <div class="bf-flow-wrap overflow-hidden pb-10">
+      <div class="bf-flow bf-products bf-reverse">
+        {[0, 1].map((copy) => (
+          <ul class="flex shrink-0 gap-4 pr-4" aria-hidden={copy === 1 ? 'true' : undefined}>
+            {products.map((p) => (
+              <li class="w-44 sm:w-52 shrink-0">
+                <a href={`/product/${p.slug}`} tabindex={copy === 1 ? -1 : undefined} class="group block overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:border-amber-400">
+                  <div class="relative h-32 sm:h-36 bg-slate-800">
+                    {p.image_url && <img src={p.image_url} alt={p.name} loading="lazy" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />}
+                    <span class="absolute top-2 right-2 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-black text-white">-{Number(offer.percent_off)}%</span>
+                  </div>
+                  <div class="p-3">
+                    <p class="line-clamp-2 min-h-[2.5rem] text-xs sm:text-sm font-bold leading-snug text-white">{p.name}</p>
+                    <p class="mt-2 text-sm font-black text-amber-400">{ksh(Number(p.price))}</p>
+                    {p.old_price && <p class="text-[11px] text-slate-400 line-through">{ksh(Number(p.old_price))}</p>}
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        ))}
+      </div>
+    </div>
+  )}
+
+  <div aria-hidden="true" class="h-1.5 bf-stripe"></div>
+</section>

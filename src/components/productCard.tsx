@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { addToCart } from '../stores/cart';
+import { track } from '../lib/analytics';
 
 interface Product {
   id: number;
@@ -9,11 +10,17 @@ interface Product {
   price: string;
   image_url: string;      // Freshly added
   stock_quantity: number; // Freshly added
+  old_price?: number | string | null;
+  // Set by withOffer() in src/lib/offers.ts when the product is in a live sale (price is then already the sale price)
+  offer?: { badge: string; percent: number } | null;
 }
 
 export default function ProductCard({ product }: { product: Product }) {
   const [toastVisible, setToastVisible] = useState(false);
   const isOutOfStock = product.stock_quantity <= 0;
+  const offer = product.offer;
+  const wasPrice = Number(product.old_price);
+  const showWas = Number.isFinite(wasPrice) && wasPrice > Number(product.price);
 
   const handleAddToCart = () => {
     addToCart({
@@ -23,6 +30,7 @@ export default function ProductCard({ product }: { product: Product }) {
       image: product.image_url,
       price: Number(product.price),
     });
+    track('add_to_cart', { product_id: product.id, product_name: product.name, value: Number(product.price), quantity: 1, label: 'product card', location: 'product-card' });
     setToastVisible(true);
   };
 
@@ -58,6 +66,17 @@ export default function ProductCard({ product }: { product: Product }) {
         }`}>
           {isOutOfStock ? 'Out of stock' : 'In stock'}
         </span>
+        {offer && (
+          <>
+            <span className="bf-badge absolute bottom-0 inset-x-0 z-10 flex items-center justify-center gap-1.5 bg-black/90 px-2 py-1 sm:py-1.5 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.12em] text-amber-400">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-amber-400 bf-announce-dot" />
+              {offer.badge}
+            </span>
+            <span className="absolute top-2 right-2 z-10 rounded-full bg-red-600 px-2 py-0.5 text-[10px] sm:text-xs font-black text-white shadow">
+              -{offer.percent}%
+            </span>
+          </>
+        )}
       </div>
 
       <div className="p-3 sm:p-4 flex flex-col flex-1 min-w-0">
@@ -69,8 +88,15 @@ export default function ProductCard({ product }: { product: Product }) {
         </p>
 
         <div className="mt-auto pt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-2">
-          <span className="whitespace-nowrap text-[15px] sm:text-lg font-black text-slate-900">
-            KSh {Number(product.price).toLocaleString()}
+          <span className="flex flex-col leading-tight">
+            {showWas && (
+              <span className="whitespace-nowrap text-[11px] sm:text-xs font-semibold text-slate-400 line-through">
+                KSh {wasPrice.toLocaleString()}
+              </span>
+            )}
+            <span className={`whitespace-nowrap text-[15px] sm:text-lg font-black ${showWas ? 'text-red-600' : 'text-slate-900'}`}>
+              KSh {Number(product.price).toLocaleString()}
+            </span>
           </span>
           {/* Add to cart, disabled when out of stock */}
           <button

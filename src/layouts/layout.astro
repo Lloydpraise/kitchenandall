@@ -4,12 +4,16 @@ import SearchBar from '../components/SearchBar';
 import CartDrawer from '../components/CartDrawer';
 import FloatingWhatsApp from '../components/FloatingWhatsApp';
 import { categories, categoryUrl, subCategoryUrl } from '../lib/categories';
+import { supabase } from '../lib/supabase';
+import { endsLabel, loadOffers, type ProductOffer } from '../lib/offers';
 
 interface Props {
   title?: string;
   description?: string;
   canonicalUrl?: string;
   noindex?: boolean;
+  /** The live offer on the product this page shows (product pages only): the announcement bar then talks about it */
+  productOffer?: ProductOffer & { price: number };
 }
 
 const {
@@ -17,7 +21,30 @@ const {
   description = "Heavy-duty commercial kitchen appliances, refrigeration, and custom stainless steel fabrication in Kenya.",
   canonicalUrl,
   noindex = false,
+  productOffer,
 } = Astro.props;
+
+// Announcement bar: advertises the live offer from Admin > Offers (nothing shows when no offer is running)
+const headlineOffer = (await loadOffers(supabase)).headline;
+const ksh = (n: number) => `KSh ${Math.round(n).toLocaleString('en-KE')}`;
+const announce = productOffer
+  ? {
+      badge: productOffer.badge,
+      long: `${productOffer.percent}% off this item: now ${ksh(productOffer.price)}, was ${ksh(productOffer.original_price)}`,
+      short: `${productOffer.percent}% off: now ${ksh(productOffer.price)}`,
+      ends_at: productOffer.ends_at,
+      link: { href: '/deals', text: 'More deals' },
+    }
+  : headlineOffer
+    ? {
+        badge: headlineOffer.badge,
+        long: headlineOffer.announcement || `${Number(headlineOffer.percent_off)}% off selected commercial kitchen equipment`,
+        short: `${Number(headlineOffer.percent_off)}% off selected equipment`,
+        ends_at: headlineOffer.ends_at,
+        link: { href: '/deals', text: 'Shop deals' },
+      }
+    : null;
+const announceEnds = announce ? endsLabel(announce.ends_at) : '';
 
 const currentPath = Astro.url.pathname;
 const activeCategory = categories.find((c) => currentPath === categoryUrl(c) || currentPath.startsWith(`${categoryUrl(c)}/`));
@@ -73,7 +100,44 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
 
-  <div class="bg-slate-900 text-slate-200 py-2 border-b border-slate-800 shrink-0">
+  {announce && (
+    <div class="relative bg-black text-white shrink-0" role="region" aria-label={announce.badge} data-track-area="offer-bar">
+      <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-x-3 gap-y-1 flex-wrap text-center text-[12px] sm:text-[13px]">
+        <span class="inline-flex items-center gap-2 font-black uppercase tracking-[0.2em] text-amber-400">
+          <span aria-hidden="true" class="bf-announce-dot h-2 w-2 rounded-full bg-amber-400"></span>
+          {announce.badge}
+        </span>
+        <span class="hidden sm:inline font-semibold">{announce.long}</span>
+        <span class="sm:hidden font-semibold">{announce.short}</span>
+        {announce.ends_at && (
+          <span class="text-slate-300" data-offer-ends={announce.ends_at}>
+            <span class="hidden md:inline">{announceEnds ? `Ends ${announceEnds}` : ''}</span>
+            <span data-offer-countdown class="font-mono font-bold text-amber-400 tabular-nums"></span>
+          </span>
+        )}
+        <a href={announce.link.href} class="font-black uppercase tracking-widest text-amber-400 underline-offset-4 hover:underline whitespace-nowrap">{announce.link.text} →</a>
+      </div>
+      <div aria-hidden="true" class="h-[3px] bf-stripe"></div>
+    </div>
+  )}
+  <script is:inline>
+    // "· 3d 04h 12m left" next to the offer's end date, kept up to date
+    (function () {
+      var box = document.querySelector('[data-offer-ends]');
+      if (!box) return;
+      var out = box.querySelector('[data-offer-countdown]'), end = Date.parse(box.getAttribute('data-offer-ends'));
+      var z = function (n) { return String(n).padStart(2, '0'); };
+      function tick() {
+        var left = end - Date.now();
+        if (!(left > 0)) { out.textContent = ''; return; }
+        var d = Math.floor(left / 864e5), h = Math.floor(left / 36e5) % 24, m = Math.floor(left / 6e4) % 60;
+        out.textContent = ' · ' + (d > 0 ? d + 'd ' : '') + z(h) + 'h ' + z(m) + 'm left';
+      }
+      tick(); setInterval(tick, 30000);
+    })();
+  </script>
+
+  <div class="bg-slate-900 text-slate-200 py-2 border-b border-slate-800 shrink-0" data-track-area="top-bar">
     <div class="max-w-7xl mx-auto px-4 flex justify-between items-center text-[12px] font-normal tracking-wide">
       <div class="flex items-center gap-6">
         <a href="mailto:info@kitchenandall.co.ke" class="hover:text-orange-400 transition-colors lowercase">info@kitchenandall.co.ke</a>
@@ -355,5 +419,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </footer>
 
   <FloatingWhatsApp client:load isProductPage={isProductPage} />
+
+  <!-- Anonymous site analytics for /admin/analytics: page views + WhatsApp, call, email, quote and social clicks -->
+  <script>
+    import { initAutoTracking } from '../lib/analytics';
+    initAutoTracking();
+  </script>
 </body>
 </html>
