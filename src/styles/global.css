@@ -74,6 +74,21 @@ body {
 .bf-flow-wrap:hover .bf-flow { animation-play-state: paused; }
 @keyframes bf-flow { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
+/* phones and tablets: the deals row is swiped sideways by hand instead of drifting */
+@media (max-width: 1023px) {
+  .bf-flow-wrap.bf-swipe {
+    overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; scroll-padding-left: 1rem;
+    -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .bf-flow-wrap.bf-swipe::-webkit-scrollbar { display: none; }
+  .bf-swipe .bf-flow { animation: none; }
+  .bf-swipe .bf-copy { display: none; }
+  .bf-swipe ul { padding-left: 1rem; }
+  .bf-swipe li { scroll-snap-align: start; }
+}
+
 /* glowing headline in the deals banner */
 .bf-glow {
   background: linear-gradient(90deg, #fbbf24, #fff7d6, #f97316, #fbbf24);

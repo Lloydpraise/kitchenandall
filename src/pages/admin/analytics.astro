@@ -86,6 +86,13 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     .feed .t { color:var(--muted); font-size:12px; white-space:nowrap; min-width:64px; padding-top:2px; }
     .feed .e { font-weight:600; }
     .feed .x { color:var(--muted); font-size:13px; }
+    .tbl-wrap { overflow-x:auto; margin-top:8px; }
+    .tbl { width:100%; border-collapse:collapse; font-size:14px; min-width:720px; }
+    .tbl th { text-align:right; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding:8px 6px; border-bottom:1px solid var(--grid); white-space:nowrap; }
+    .tbl td { text-align:right; padding:9px 6px; border-bottom:1px solid var(--grid); white-space:nowrap; font-variant-numeric:tabular-nums; }
+    .tbl th:first-child, .tbl td:first-child { text-align:left; white-space:normal; }
+    .tbl td small { display:block; font-size:11px; color:var(--muted); }
+    .tbl tr.best td:first-child b::after { content:' ★'; color:#b45309; }
     .empty { color:var(--muted); font-size:14px; padding:12px 0; }
     .spark { display:block; width:100%; height:30px; margin-top:8px; }
     .donut { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
@@ -136,6 +143,25 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
       <div class="chart" id="trend"><svg role="img" aria-label="Trend chart"></svg><div class="tip" hidden></div></div>
     </section>
 
+    <section class="card" id="marketingCard">
+      <h2>Marketing: where visitors come from</h2>
+      <p class="sub">Each visit is counted under the place it came from, with what that visit went on to do. Use it to see which marketing brings buyers, not just clicks.</p>
+      <div id="trafficAlert"></div>
+      <div class="grid2" style="margin-bottom:0">
+        <div>
+          <div class="sub2">Visits by type</div>
+          <div class="donut" id="trafficGroups"></div>
+        </div>
+        <div>
+          <div class="sub2">Visits that contacted you or ordered, by source</div>
+          <div class="bars" id="trafficResults"></div>
+        </div>
+      </div>
+      <div class="sub2">Every source</div>
+      <div class="tbl-wrap"><table class="tbl" id="trafficTable"></table></div>
+      <p class="sub" style="margin-top:10px">★ = most contacts or orders. Google Ads are recognised automatically. Facebook and Instagram ads only show as ads when the ad link has <b>utm_medium=paid</b> (set once in Meta Ads Manager, under the ad’s URL parameters).</p>
+    </section>
+
     <div class="grid2">
       <section class="card">
         <h2>Sales funnel</h2>
@@ -161,6 +187,23 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
         <button type="button" data-t="viewed_not_carted">Viewed, rarely added</button>
       </div>
       <div class="bars" id="products"></div>
+    </section>
+
+    <section class="card" id="offersCard">
+      <h2>Offers</h2>
+      <p class="sub">Sale products (Admin &gt; Offers): how many were clicked, viewed, added to cart and ordered</p>
+      <div id="offersAlert"></div>
+      <div class="kpis" id="offerKpis" style="margin-bottom:12px"></div>
+      <div class="grid2" style="margin-bottom:0">
+        <div>
+          <div class="sub2">Where sale products were clicked</div>
+          <div class="donut" id="offerPlaces"></div>
+        </div>
+        <div>
+          <div class="sub2">Sale products people looked at most</div>
+          <div class="bars" id="offerTop"></div>
+        </div>
+      </div>
     </section>
 
     <div class="grid2">
@@ -251,13 +294,17 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
         whatsapp_click: 'WhatsApp', call_click: 'Call', email_click: 'Email', quote_click: 'Get quote button',
         quote_submit: 'Quote form sent', social_click: 'Social media', product_view: 'Viewed product',
         add_to_cart: 'Added to cart', remove_from_cart: 'Removed from cart', cart_open: 'Opened cart',
-        checkout_start: 'Started checkout', order_sent: 'Sent WhatsApp order', search: 'Searched', search_click: 'Clicked search result'
+        checkout_start: 'Started checkout', order_sent: 'Sent WhatsApp order', search: 'Searched', search_click: 'Clicked search result',
+        offer_click: 'Sale product'
       };
       var AREA_LABEL = {
         'top-bar': 'top bar', header: 'header', footer: 'footer', 'mobile-menu': 'mobile menu', 'floating-button': 'floating button',
         popup: 'popup', 'product-buy-panel': 'product page (buy panel)', 'product-help-box': 'product page (help box)',
         'quote-thank-you': 'after quote form', 'quote-page': 'quote page', product: 'product page', home: 'home page',
-        category: 'category page', catalog: 'all products page', checkout: 'checkout', blog: 'blog', page: 'other page'
+        category: 'category page', catalog: 'all products page', checkout: 'checkout', blog: 'blog', page: 'other page',
+        'home-deals-banner': 'home page deals banner', 'home-shop-the-deals': 'home page “Shop the deals” button',
+        'home-see-all-deals': 'home page “See all deals” card', 'deals-page': 'deals page', 'related-products': 'related products on a product page',
+        'offer-bar': 'sale bar at the top of the site', 'mobile-sticky-bar': 'product page (bottom bar on phones)', other: 'other'
       };
       var area = function (a) { return AREA_LABEL[a] || a || 'other'; };
 
@@ -560,6 +607,68 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
         });
       }
 
+      function renderTraffic() {
+        var t = data.traffic, table = $('trafficTable');
+        $('trafficAlert').innerHTML = ''; table.innerHTML = '';
+        if (!t) {
+          $('trafficAlert').appendChild(el('div', 'info', 'Detailed sources are not set up yet. Run supabase/analytics-offers-and-sources.sql in the Supabase SQL editor.'));
+          $('trafficGroups').innerHTML = ''; $('trafficResults').innerHTML = '';
+          return;
+        }
+        var rows = t.channels || [];
+        donut('trafficGroups', t.groups, { value: 'visits', unit: 'visits', what: 'type', label: function (r) { return r.grp; }, empty: 'No visits yet in this period.' });
+        var results = rows.map(function (r) { return { channel: r.channel, results: (Number(r.contacted) || 0), ordered: Number(r.ordered) || 0, visits: Number(r.visits) || 0, value: Number(r.order_value) || 0 }; })
+          .filter(function (r) { return r.results > 0; }).sort(function (a, b) { return b.results - a.results; });
+        bars('trafficResults', results, {
+          value: 'results', unit: 'visits that contacted you', label: function (r) { return r.channel; },
+          extra: function (r) { return fmt(r.ordered) + ' orders · ' + pct(r.results, r.visits) + ' of visits'; },
+          empty: 'No contacts or orders yet in this period.'
+        });
+        if (!rows.length) { table.appendChild(el('caption', 'empty', 'No visits yet in this period.')); return; }
+        var best = rows.reduce(function (b, r) { return (Number(r.contacted) || 0) > (Number(b && b.contacted) || 0) ? r : b; }, null);
+        var head = el('tr');
+        ['Source', 'Visitors', 'Viewed a product', 'Added to cart', 'WhatsApp clicked', 'Contacted you (any way)', 'Orders sent'].forEach(function (h) { head.appendChild(el('th', '', h)); });
+        var thead = el('thead'); thead.appendChild(head); table.appendChild(thead);
+        var tb = el('tbody');
+        rows.forEach(function (r) {
+          var tr = el('tr', best && r === best && Number(r.contacted) > 0 ? 'best' : '');
+          var name = el('td'); name.appendChild(el('b', '', r.channel)); name.appendChild(el('small', '', r.grp)); tr.appendChild(name);
+          var cell = function (v, base, sub) { var td = el('td', '', fmt(v)); var x = sub != null ? sub : (base ? pct(Number(v) || 0, Number(base) || 0) : ''); if (x) td.appendChild(el('small', '', x)); tr.appendChild(td); };
+          cell(r.visitors, 0, fmt(r.visits) + ' visits');
+          cell(r.viewed, r.visits); cell(r.carted, r.visits); cell(r.whatsapp, r.visits); cell(r.contacted, r.visits);
+          cell(r.ordered, r.visits, Number(r.order_value) ? ksh(r.order_value) : pct(Number(r.ordered) || 0, Number(r.visits) || 0));
+          tb.appendChild(tr);
+        });
+        table.appendChild(tb);
+      }
+
+      function renderOffers() {
+        var o = data.offers, box = $('offerKpis'); box.innerHTML = ''; $('offersAlert').innerHTML = '';
+        if (!o) {
+          $('offersAlert').appendChild(el('div', 'info', 'Offer numbers are not set up yet. Run supabase/offer-analytics.sql in the Supabase SQL editor.'));
+          $('offerPlaces').innerHTML = ''; $('offerTop').innerHTML = '';
+          return;
+        }
+        [
+          ['Sale product clicks', o.clicks, fmt(o.products_clicked) + ' different products · ' + fmt(o.click_visitors) + ' people'],
+          ['Sale product views', o.views, fmt(o.products_viewed) + ' of ' + fmt(o.offer_products) + ' sale products · ' + fmt(o.viewers) + ' people'],
+          ['Sale products added to cart', o.carts, pct(Number(o.carts) || 0, Number(o.views) || 0) + ' of views'],
+          ['Orders with a sale product', o.orders, fmt(o.units) + ' units · ' + ksh(o.order_value)]
+        ].forEach(function (t) {
+          var tile = el('div', 'kpi');
+          tile.appendChild(el('div', 'k', t[0]));
+          tile.appendChild(el('div', 'v', fmt(t[1])));
+          tile.appendChild(el('div', 's', t[2]));
+          box.appendChild(tile);
+        });
+        donut('offerPlaces', o.click_places, { value: 'clicks', unit: 'clicks', what: 'place', label: function (r) { return area(r.location); }, empty: 'No sale product clicks yet in this period.' });
+        bars('offerTop', o.top, {
+          value: 'views', unit: 'views', label: function (r) { return r.name || ('Product ' + r.id); }, href: function (r) { return r.path || null; },
+          extra: function (r) { return fmt(r.clicks) + ' clicks · ' + fmt(r.carts) + ' added · ' + fmt(r.units) + ' ordered'; },
+          empty: 'No sale products viewed yet in this period.'
+        });
+      }
+
       function render() {
         var from = new Date(data.from), to = new Date(data.to);
         var hasAny = (data.kpis && (data.kpis.page_views || data.kpis.product_views)) || (data.previous && data.previous.page_views);
@@ -567,7 +676,7 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow');
           ' to ' + to.toLocaleString('en-KE', { timeZone: 'Africa/Nairobi', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' (Nairobi time). Your own visits while signed in here are not counted.';
         $('alert').innerHTML = '';
         if (!hasAny) $('alert').appendChild(el('div', 'info', 'No visits recorded in this period yet. Tracking starts as soon as the new site code is live; numbers appear within seconds of a visit.'));
-        renderKpis(); renderChips(); renderTrend(); renderFunnel(); renderProducts(); renderHours(); renderCampaigns(); renderRecent();
+        renderKpis(); renderChips(); renderTrend(); renderFunnel(); renderTraffic(); renderProducts(); renderOffers(); renderHours(); renderCampaigns(); renderRecent();
 
         bars('buttons', data.buttons, {
           value: 'clicks', unit: 'clicks', label: function (r) { return EVENT_LABEL[r.event] || r.event; },

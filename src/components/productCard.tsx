@@ -45,6 +45,12 @@ export default function ProductCard({ product }: { product: Product }) {
     if ((e.target as HTMLElement).closest('button')) {
       return;
     }
+    if (product.offer) {
+      // A sale product was clicked: counted in Admin > Analytics > Offers, with where on the site it was.
+      const path = window.location.pathname;
+      const where = path === '/' ? 'home' : path.startsWith('/deals') ? 'deals-page' : path.startsWith('/product/') ? 'related-products' : path.startsWith('/category') ? 'category' : path.startsWith('/catalog') ? 'catalog' : 'other';
+      track('offer_click', { product_id: product.id, product_name: product.name, value: Number(product.price), label: product.offer.badge, location: where });
+    }
     window.location.href = `/product/${product.slug}`;
   };
 

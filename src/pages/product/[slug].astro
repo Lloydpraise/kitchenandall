@@ -79,6 +79,13 @@ const productJsonLd = product
         url: canonical,
         priceCurrency: 'KES',
         price: Number(product.price),
+        // On sale: also give Google the normal price, so it can show it crossed out next to the sale price.
+        ...(product.offer ? {
+          priceSpecification: [
+            { '@type': 'UnitPriceSpecification', price: Number(product.price), priceCurrency: 'KES' },
+            { '@type': 'UnitPriceSpecification', priceType: 'https://schema.org/StrikethroughPrice', price: Number(product.offer.original_price), priceCurrency: 'KES' },
+          ],
+        } : {}),
         ...(product.offer?.ends_at ? { priceValidUntil: new Date(Date.parse(product.offer.ends_at) - 1000).toISOString().slice(0, 10) } : {}),
         itemCondition: 'https://schema.org/NewCondition',
         availability: (product.stock_quantity ?? 20) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -137,4 +144,4 @@ const productJsonLd = product
       </div>
     )}
   </main>
-</Layout>
+</Layout>

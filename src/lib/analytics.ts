@@ -5,7 +5,7 @@
 export type TrackEvent =
   | 'page_view' | 'product_view' | 'add_to_cart' | 'remove_from_cart' | 'cart_open'
   | 'checkout_start' | 'order_sent' | 'whatsapp_click' | 'call_click' | 'email_click'
-  | 'quote_click' | 'quote_submit' | 'social_click' | 'search' | 'search_click';
+  | 'quote_click' | 'quote_submit' | 'social_click' | 'search' | 'search_click' | 'offer_click';
 
 export interface TrackProps {
   product_id?: number | string | null;
@@ -37,24 +37,50 @@ function visitorId() {
   return id;
 }
 
+// Where this page visit came from: the referring site and utm tags / ad click ids on the landing link.
+function arrival() {
+  const params = new URLSearchParams(window.location.search);
+  let ref: string | null = null;
+  try {
+    const r = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : '';
+    ref = r && r !== window.location.hostname.replace(/^www\./, '') ? r : null;
+  } catch { ref = null; }
+  const utm: Record<string, string> = {};
+  for (const k of ['utm_source', 'utm_medium', 'utm_campaign']) { const v = params.get(k); if (v) utm[k] = v; }
+  // Ad click ids that ad platforms add to the link by themselves: these visits are paid ads.
+  const AD_IDS: [string, string][] = [
+    ['gclid', 'google'], ['gbraid', 'google'], ['wbraid', 'google'], ['dclid', 'google'],
+    ['msclkid', 'bing'], ['ttclid', 'tiktok'], ['twclid', 'x'], ['li_fat_id', 'linkedin'],
+  ];
+  const adId = AD_IDS.find(([k]) => params.get(k));
+  if (adId) { utm.utm_source = utm.utm_source || adId[1]; utm.utm_medium = utm.utm_medium || 'cpc'; }
+  // Facebook adds fbclid to ad AND normal post clicks, so it can't tell them apart. Ads are only told apart when the
+  // ad link carries utm_medium=paid (set once in Meta Ads Manager > URL parameters).
+  if (!utm.utm_source && params.get('fbclid')) { utm.utm_source = 'facebook'; utm.utm_medium = utm.utm_medium || 'social'; }
+  // Links opened inside the Facebook / Instagram / TikTok / LinkedIn / Snapchat apps often arrive with no referrer:
+  // the app's browser still names itself, so these are not counted as "direct".
+  if (!utm.utm_source && !ref) {
+    const ua = navigator.userAgent || '';
+    ref = /Instagram/i.test(ua) ? 'instagram.com'
+      : /FBAN|FBAV|FB_IAB|FBIOS|FB4A/i.test(ua) ? 'facebook.com'
+      : /musical_ly|BytedanceWebview|TikTok/i.test(ua) ? 'tiktok.com'
+      : /LinkedInApp/i.test(ua) ? 'linkedin.com'
+      : /Snapchat/i.test(ua) ? 'snapchat.com'
+      : null;
+  }
+  return { ref, utm, tagged: Object.keys(utm).length > 0 };
+}
+
 // Session id plus where this session came from (first page's referrer and utm tags).
+// A new session starts after 30 minutes without activity, or when the visitor comes back through a different ad/campaign link.
 function session() {
   const ls = store('local');
   const now = Date.now();
   let s: { id: string; last: number; ref: string | null; utm: Record<string, string> } | null = null;
   try { s = JSON.parse(ls?.getItem('kna_sess') || 'null'); } catch { s = null; }
-  if (!s || now - s.last > SESSION_MS) {
-    const params = new URLSearchParams(window.location.search);
-    let ref: string | null = null;
-    try {
-      const r = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : '';
-      ref = r && r !== window.location.hostname.replace(/^www\./, '') ? r : null;
-    } catch { ref = null; }
-    const utm: Record<string, string> = {};
-    for (const k of ['utm_source', 'utm_medium', 'utm_campaign']) { const v = params.get(k); if (v) utm[k] = v; }
-    if (!utm.utm_source && params.get('gclid')) { utm.utm_source = 'google'; utm.utm_medium = 'cpc'; }
-    if (!utm.utm_source && params.get('fbclid')) { utm.utm_source = 'facebook'; utm.utm_medium = utm.utm_medium || 'social'; }
-    s = { id: rid(), last: now, ref, utm };
+  const a = arrival();
+  if (!s || now - s.last > SESSION_MS || (a.tagged && JSON.stringify(a.utm) !== JSON.stringify(s.utm))) {
+    s = { id: rid(), last: now, ref: a.ref, utm: a.utm };
   }
   s.last = now;
   try { ls?.setItem('kna_sess', JSON.stringify(s)); } catch { /* storage full or blocked */ }
@@ -159,6 +185,11 @@ export function initAutoTracking() {
       else if (/\/get-quote\/?$/.test(raw)) event = 'quote_click';
       else if (SOCIAL.test(href)) event = 'social_click';
     }
-    if (event) track(event, { label, location });
+    if (event) {
+      // Links can name the product they lead to (e.g. sale products in the home deals banner).
+      const pid = el.getAttribute('data-product-id');
+      const extra: TrackProps = pid ? { product_id: Number(pid), product_name: el.getAttribute('data-product-name'), value: Number(el.getAttribute('data-value')) || null } : {};
+      track(event, { label, location, ...extra });
+    }
   }, { capture: true });
 }

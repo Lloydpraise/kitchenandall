@@ -39,7 +39,14 @@ export const GET: APIRoute = async (ctx) => {
       const missing = /admin_site_analytics|site_events|does not exist|schema cache/i.test(error.message || '');
       return json({ error: missing ? 'Analytics is not set up in Supabase yet. Run supabase/site-analytics.sql in the Supabase SQL editor.' : error.message }, 500);
     }
-    return json(data);
+    // Offers + traffic sources sections (supabase/analytics-offers-and-sources.sql).
+    // If that SQL has not been run yet, those two sections say so and the rest still loads.
+    const args = { p_from: from.toISOString(), p_to: to.toISOString() };
+    const [offers, traffic] = await Promise.all([
+      (supabaseAdmin() as any).rpc('admin_offer_analytics', args),
+      (supabaseAdmin() as any).rpc('admin_traffic_sources', args),
+    ]);
+    return json({ ...data, offers: offers.error ? null : offers.data, traffic: traffic.error ? null : traffic.data });
   } catch (e: any) {
     return json({ error: e.message || 'Could not load analytics' }, 500);
   }

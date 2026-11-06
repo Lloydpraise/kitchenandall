@@ -10,7 +10,7 @@ export const prerender = false;
 const EVENTS = new Set([
   'page_view', 'product_view', 'add_to_cart', 'remove_from_cart', 'cart_open',
   'checkout_start', 'order_sent', 'whatsapp_click', 'call_click', 'email_click',
-  'quote_click', 'quote_submit', 'social_click', 'search', 'search_click',
+  'quote_click', 'quote_submit', 'social_click', 'search', 'search_click', 'offer_click',
 ]);
 const BOT = /bot|crawl|spider|slurp|preview|headless|lighthouse|facebookexternalhit|whatsapp|python|curl|wget|axios|node-fetch|go-http/i;
 const MAX_BODY = 16_000;

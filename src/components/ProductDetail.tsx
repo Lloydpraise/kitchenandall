@@ -147,10 +147,10 @@ export default function ProductDetail({ product }: { product: Product }) {
   const trackAdd = (label: string) =>
     track('add_to_cart', { product_id: product.id, product_name: product.name, category: product.sub_category || product.major_category || null, value: product.price, quantity: 1, label, location: 'product' });
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (label = 'product page') => {
     addToCart(itemPayload);
     pushDataLayerEvent('add_to_cart', product);
-    trackAdd('product page');
+    trackAdd(label);
     setToastVisible(true);
   };
 
@@ -272,7 +272,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 <button
                   type="button"
                   disabled={isOutOfStock}
-                  onClick={handleAddToCart}
+                  onClick={() => handleAddToCart()}
                   className="inline-flex min-h-[56px] w-full items-center justify-center bg-indigo-700 px-6 py-4 text-sm font-black uppercase tracking-[0.25em] text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                 >
                   Add to cart
@@ -395,23 +395,39 @@ export default function ProductDetail({ product }: { product: Product }) {
         </section>
       )}
 
-      {/* ───────── Mobile sticky bar: price left, Buy right ───────── */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(15,23,42,0.12)]">
-        <div className="flex items-center justify-between gap-4">
-          <div className="min-w-0">
+      {/* ───────── Mobile sticky bar: price on top, Add to cart left, Ask on WhatsApp right ───────── */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-3 pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(15,23,42,0.12)]">
+        <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
+          <p className={`truncate text-lg font-black leading-tight ${hasDiscount ? 'text-red-600' : 'text-slate-900'}`}>
+            KSH {Number(product.price).toLocaleString()}
             {hasDiscount && (
-              <p className="truncate text-xs font-semibold leading-tight text-slate-400"><span className="line-through">KSH {Number(product.old_price).toLocaleString()}</span> <span className="font-black uppercase text-red-600">-{discountPercent}%</span></p>
+              <span className="ml-2 text-xs font-semibold text-slate-400"><span className="line-through">KSH {Number(product.old_price).toLocaleString()}</span> <span className="font-black uppercase text-red-600">-{discountPercent}%</span></span>
             )}
-            <p className={`truncate text-xl font-black leading-tight ${hasDiscount ? 'text-red-600' : 'text-slate-900'}`}>KSH {Number(product.price).toLocaleString()}</p>
-          </div>
+          </p>
+          <p className={`shrink-0 text-[11px] font-bold uppercase tracking-wider ${isOutOfStock ? 'text-red-600' : 'text-emerald-600'}`}>
+            {isOutOfStock ? 'Out of stock' : 'In stock'}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             disabled={isOutOfStock}
-            onClick={handleBuyNow}
-            className="inline-flex min-h-[52px] min-w-[150px] shrink-0 items-center justify-center rounded-xl bg-orange-600 px-8 text-base font-black uppercase tracking-widest text-white shadow-lg shadow-orange-600/30 transition active:scale-[0.98] hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+            onClick={() => handleAddToCart('sticky bar')}
+            className="inline-flex min-h-[52px] items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-orange-600 px-2 text-xs min-[380px]:text-[13px] font-black uppercase tracking-normal min-[380px]:tracking-wide text-white shadow-lg shadow-orange-600/30 transition active:scale-[0.98] hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
           >
-            Buy now
+            <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L21 8H6" strokeLinecap="round" strokeLinejoin="round" /><circle cx="10" cy="20" r="1.4" /><circle cx="18" cy="20" r="1.4" /></svg>
+            Add to cart
           </button>
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-track-area="mobile-sticky-bar"
+            className="inline-flex min-h-[52px] items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-[#25D366] px-2 text-xs min-[380px]:text-[13px] font-black uppercase tracking-normal min-[380px]:tracking-wide text-white shadow-lg shadow-green-600/30 transition active:scale-[0.98] hover:bg-[#1ebe5b]"
+          >
+            <WhatsAppIcon className="h-4 w-4" chip />
+            Ask on WhatsApp
+          </a>
         </div>
       </div>
 
