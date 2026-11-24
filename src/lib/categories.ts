@@ -148,15 +148,15 @@ export const categories: Category[] = [
       {
         slug: 'bain-marie',
         name: 'Bain Marie',
-        title: 'Bain Marie Food Warmer Price in Kenya',
-        description: 'Bain marie food warmers in Kenya with 2 to 12 pans, mobile or fixed, with sneeze guards and cabinets, for hotels, schools and buffets.',
+        title: 'Bain Marie Price in Kenya | Bain Marie Food Warmers',
+        description: 'Bain marie price in Kenya: food warmers with 2 to 12 pans, mobile or fixed, with sneeze guards and cabinets. Free delivery within Nairobi.',
         intro: 'Electric and gas bain marie counters with 2 to 12 pans, on legs, cabinets or castors, with glass sneeze guards and lids to keep food hot and hygienic for hours.',
       },
       {
         slug: 'food-display-warmers',
         name: 'Food Display Warmers',
-        title: 'Chips Display Warmer & Food Display Warmer Price in Kenya',
-        description: 'Chips display warmers and food display warmers in Kenya that keep chips, chicken and samosas hot and on show, so customers buy on sight.',
+        title: 'Display Warmers Kenya | Chips & Food Display Warmer Prices',
+        description: 'Display warmers supplier in Kenya: chips display warmers and glass food warmers that keep chips, chicken and samosas hot and on show. Nairobi delivery.',
         intro: 'Glass display warmers for chips, chicken, samosas and pastries. Customers see the food, it stays hot and crisp, and you sell more.',
       },
       {
@@ -179,15 +179,15 @@ export const categories: Category[] = [
     slug: 'bakery-equipment',
     name: 'Bakery Equipment',
     menuName: 'Bakery',
-    title: 'Bakery Equipment & Baking Oven Prices in Kenya',
-    description: 'Bakery equipment in Kenya: commercial baking ovens, charcoal ovens, dough mixers, bread slicers and baking tins for bakeries big and small.',
+    title: 'Bakery Equipment & Bakery Machine Prices in Kenya',
+    description: 'Bakery equipment list and prices in Kenya: commercial baking ovens, charcoal ovens, dough mixers and bread slicers. Free delivery within Nairobi.',
     intro: 'Start or grow a bakery with ovens, mixers and slicers that bake evenly batch after batch. From jua kali style charcoal ovens to electric deck ovens and spiral dough mixers, we guide you to the right set up.',
     subs: [
       {
         slug: 'baking-ovens',
         name: 'Commercial Baking Ovens',
-        title: 'Commercial Baking Oven Price in Kenya | Deck Ovens',
-        description: 'Commercial baking ovens in Kenya: electric and gas deck ovens, pizza ovens and tandoor ovens for bakeries, hotels and restaurants.',
+        title: 'Commercial Bakery Ovens in Kenya | Baking Oven Prices',
+        description: 'Commercial bakery ovens in Kenya: electric and gas deck ovens, pizza ovens and tandoor ovens for bakeries, hotels and restaurants. Nairobi delivery.',
         intro: 'Single, double and triple deck ovens in electric and gas, plus pizza and tandoor ovens, for even baking and steady output.',
       },
       {
@@ -217,8 +217,8 @@ export const categories: Category[] = [
     slug: 'butchery-equipment',
     name: 'Butchery Equipment',
     menuName: 'Butchery',
-    title: 'Butchery Equipment & Meat Display Chiller Prices in Kenya',
-    description: 'Butchery equipment in Kenya: meat display chillers, display fridges, bone saws, meat mincers and slicers to start or upgrade your butchery.',
+    title: 'Butchery Equipment Prices in Kenya | Tools & Machines',
+    description: 'Butchery equipment supplier in Kenya: meat display chillers, meat mincers, bone saws, slicers and cleavers to start or upgrade a butchery. Nairobi delivery.',
     intro: 'Everything to open or upgrade a butchery: meat display chillers that keep meat fresh and on show, display fridges, bone saw machines, meat mincers and slicers.',
     subs: [
       {
@@ -231,7 +231,7 @@ export const categories: Category[] = [
       {
         slug: 'butchery-machines',
         name: 'Butchery Machines & Tools',
-        title: 'Bone Saw Machine & Meat Mincer Price in Kenya',
+        title: 'Commercial Meat Mincer & Bone Saw Price in Kenya',
         description: 'Butchery machines in Kenya: bone saw machines, meat mincers, meat slicers and cleavers that cut faster and cleaner.',
         intro: 'Bone saw machines, electric meat mincers, meat slicers and cleavers that cut and portion faster with less waste.',
       },
@@ -248,8 +248,8 @@ export const categories: Category[] = [
     slug: 'food-processing',
     name: 'Food Processing Machines',
     menuName: 'Food Processing',
-    title: 'Food Processing Machines Prices in Kenya | Kitchen And All',
-    description: 'Food processing machines in Kenya: chips cutters, potato peelers, nut roasters, juice machines, water vending machines and weighing scales.',
+    title: 'Food Processing Machines in Kenya | Equipment Prices',
+    description: 'Food processing machines in Kenya: chips cutters, potato peelers, nut roasters, juice machines, milk processing tanks and water vending machines.',
     intro: 'Machines that save labour and open new income: chips cutters and potato peelers, nut roasters, juice extractors, tea urns, water vending machines and milk tanks.',
     subs: [
       {
@@ -366,7 +366,7 @@ export const categories: Category[] = [
       {
         slug: 'trolleys',
         name: 'Trolleys & Carts',
-        title: 'Stainless Steel Trolley & Food Trolley Price in Kenya',
+        title: 'Trolley Cart & Stainless Steel Trolley Price in Kenya',
         description: 'Stainless steel trolleys in Kenya: service trolleys, food trolleys with pans, platform and tray trolleys that move loads safely.',
         intro: 'Service trolleys, food trolleys with pans, tray trolleys and platform trolleys on strong castors that move food and loads safely.',
       },

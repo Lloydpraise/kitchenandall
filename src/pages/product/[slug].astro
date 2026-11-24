@@ -74,9 +74,11 @@ const productJsonLd = product
       description: metaDescription,
       sku: String(product.id),
       url: canonical,
+      ...(category ? { category: sub ? `${category.name} > ${sub.name}` : category.name } : {}),
       offers: {
         '@type': 'Offer',
         url: canonical,
+        seller: { '@type': 'Organization', name: 'Kitchen And All', url: siteUrl },
         priceCurrency: 'KES',
         price: Number(product.price),
         // On sale: also give Google the normal price, so it can show it crossed out next to the sale price.

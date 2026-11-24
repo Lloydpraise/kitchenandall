@@ -7,6 +7,7 @@ import ProductCard from '../../components/productCard';
 import { supabase } from '../../lib/supabase';
 import { categories, findCategory, categoryUrl, subCategoryUrl, legacyCategoryRedirects } from '../../lib/categories';
 import { loadOffers, withOffers } from '../../lib/offers';
+import { guideFor, guideHtml, plainText } from '../../lib/categoryGuides';
 
 const siteUrl = 'https://kitchenandall.co.ke';
 const parts = (Astro.params.path || '').split('/').filter(Boolean);
@@ -67,6 +68,28 @@ const priceStep = Math.max(...prices, 0) > 200000 ? 1000 : 500;
 const priceMin = prices.length ? Math.floor(Math.min(...prices) / priceStep) * priceStep : 0;
 const priceMax = prices.length ? Math.ceil(Math.max(...prices) / priceStep) * priceStep : 0;
 const showPriceSlider = products.length > 1 && priceMax > priceMin;
+
+// Buying guide with a live price table and FAQ, on the hub pages that have one (src/lib/categoryGuides.ts)
+const guide = !isIndex && !notFound ? guideFor(category?.slug, sub?.slug) : undefined;
+const kes = (n: number) => `KES ${Math.round(n).toLocaleString('en-US')}`;
+type PriceRow = { name: string; href: string; price: string; note: string };
+const priceRows: PriceRow[] = !guide
+  ? []
+  : sub
+    ? [...products].filter((p) => Number(p.price) > 0).sort((a, b) => Number(a.price) - Number(b.price)).slice(0, 20)
+        .map((p) => ({ name: p.name, href: `/product/${p.slug}`, price: kes(Number(p.price)), note: '' }))
+    : category!.subs.flatMap((s) => {
+        const list = products.filter((p) => p.sub_category === s.name && Number(p.price) > 0).map((p) => Number(p.price));
+        if (!list.length) return [];
+        return [{ name: s.name, href: subCategoryUrl(category!, s), price: `From ${kes(Math.min(...list))}`, note: list.length > 1 ? `${list.length} models, up to ${kes(Math.max(...list))}` : '1 model' }];
+      });
+const faqJsonLd = guide?.faqs.length
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: guide.faqs.map((f) => ({ '@type': 'Question', name: plainText(f.q), acceptedAnswer: { '@type': 'Answer', text: plainText(f.a) } })),
+    }
+  : null;
 
 const itemListJsonLd = page && products.length
   ? {
@@ -169,6 +192,57 @@ const itemListJsonLd = page && products.length
                 <p class="text-slate-600">We are adding products here. Tell us what you need and we will quote or build it for you.</p>
                 <a href="/get-quote" class="mt-6 inline-flex rounded-full bg-orange-600 px-6 py-3 text-xs font-black uppercase tracking-widest text-white hover:bg-orange-700">Get a quote</a>
               </div>
+            )}
+
+            {guide && (
+              <section class="mt-16 rounded-2xl border border-slate-200 bg-white p-6 lg:p-10" aria-labelledby="buying-guide">
+                {faqJsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />}
+                <h2 id="buying-guide" class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">{guide.heading}</h2>
+                <div class="h-1.5 w-20 bg-orange-600 mt-3"></div>
+                <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
+                  <div class="min-w-0 space-y-8 text-slate-600 leading-relaxed">
+                    {guide.sections.map((s) => (
+                      <div>
+                        <h3 class="text-lg font-black text-slate-900">{s.heading}</h3>
+                        <div class="mt-3 space-y-3" set:html={guideHtml(s.body)} />
+                      </div>
+                    ))}
+                  </div>
+                  {priceRows.length > 0 && (
+                    <aside class="self-start rounded-2xl bg-slate-50 border border-slate-200 p-5">
+                      <h3 class="text-sm font-black uppercase tracking-widest text-slate-900">{guide.tableHeading}</h3>
+                      <table class="mt-4 w-full text-sm">
+                        <thead class="sr-only"><tr><th>Item</th><th>Price</th></tr></thead>
+                        <tbody>
+                          {priceRows.map((r) => (
+                            <tr class="border-t border-slate-200 align-top">
+                              <td class="py-2.5 pr-3">
+                                <a href={r.href} class="font-semibold text-slate-800 hover:text-orange-600">{r.name}</a>
+                                {r.note && <div class="text-xs text-slate-500">{r.note}</div>}
+                              </td>
+                              <td class="py-2.5 text-right font-black text-slate-900 whitespace-nowrap">{r.price}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      <p class="mt-4 text-xs text-slate-500">Prices on the site today. Made to size items are quoted on request.</p>
+                    </aside>
+                  )}
+                </div>
+                {guide.faqs.length > 0 && (
+                  <div class="mt-12">
+                    <h3 class="text-lg font-black text-slate-900">Frequently asked questions</h3>
+                    <div class="mt-4 divide-y divide-slate-200 border-y border-slate-200">
+                      {guide.faqs.map((f) => (
+                        <details class="group py-4">
+                          <summary class="cursor-pointer list-none font-bold text-slate-800 group-open:text-orange-600">{f.q}</summary>
+                          <div class="mt-2 text-slate-600 leading-relaxed" set:html={guideHtml(f.a)} />
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
             )}
 
             {category && (

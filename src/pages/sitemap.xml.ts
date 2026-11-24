@@ -13,7 +13,7 @@ export const GET: APIRoute = async () => {
     .select('slug')
     .eq('published', true);
 
-  const staticUrls = ['', 'catalog', 'blogs', 'get-quote', 'terms', 'privacy', 'shipping', 'returns'];
+  const staticUrls = ['', 'catalog', 'commercial-kitchen-equipment-nairobi', 'blogs', 'get-quote', 'terms', 'privacy', 'shipping', 'returns'];
   const categoryUrls = ['/category', ...categories.flatMap((c) => [categoryUrl(c), ...c.subs.map((s) => subCategoryUrl(c, s))])].map((u) => u.slice(1));
   const productUrls = (products || []).map((p: any) => `product/${p.slug}`);
   const postUrls = (posts || []).map((p: any) => `blogs/${p.slug}`);
